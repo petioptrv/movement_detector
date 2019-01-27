@@ -4,8 +4,9 @@ import numpy as np
 
 
 class AbstractVideo(ABC):
-    def __init__(self):
+    def __init__(self, file_path: str = None):
         super().__init__()
+        self.file_path = file_path
         pass
 
     @abstractmethod

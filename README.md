@@ -1,4 +1,4 @@
-# freezing_detector
+# movement_detector
 
 DESCRIPTION
 

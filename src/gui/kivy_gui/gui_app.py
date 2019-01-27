@@ -1,3 +1,5 @@
+import numpy as np
+
 from kivy.app import App
 from kivy.graphics import Rectangle
 from kivy.uix.gridlayout import GridLayout
@@ -8,7 +10,7 @@ class AppButton(Button):
     font_size = 32
 
 
-class KivyGuiLayout(GridLayout):
+class GuiLayout(GridLayout):
     def __init__(self, **kwargs):
         super(KivyGuiLayout, self).__init__(**kwargs)
 
@@ -21,9 +23,14 @@ class KivyGuiLayout(GridLayout):
         self.padding = 10
 
 
-class KivyGuiApp(App):
+class VideoPlayer:
+    def __init__(self, video: np.ndarray = None):
+        self.video = video
+
+
+class GuiApp(App):
     def __init__(self, **kwargs):
-        super(KivyGuiApp, self).__init__(**kwargs)
+        super(GuiApp, self).__init__(**kwargs)
         self.video
 
     def build(self):

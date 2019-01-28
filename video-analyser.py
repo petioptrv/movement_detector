@@ -1,11 +1,13 @@
 import cv2
 import logging
+import numpy as np
 
 # create the logger object
 logger = logging.getLogger('main')
 
 
-def frame_diff_4(img_vvold, img_vold, img_old, img_new):
+def frame_diff_4(img_vvold: np.ndarray, img_vold: np.ndarray, img_old: np.ndarray, img_new: np.ndarray) \
+        -> np.ndarray:
     """
     Computes the average difference between 4 frames
     :param img_vvold:
@@ -22,7 +24,7 @@ def frame_diff_4(img_vvold, img_vold, img_old, img_new):
     return cv2.bitwise_or(img_combination, img_diff2)
 
 
-def frame_diff_3(img_vold, img_old, img_new):
+def frame_diff_3(img_vold: np.ndarray, img_old: np.ndarray, img_new: np.ndarray) -> np.ndarray:
     """
     computes the difference between 3 frames
     :param img_vold: the oldest frame
@@ -35,7 +37,7 @@ def frame_diff_3(img_vold, img_old, img_new):
     return cv2.bitwise_or(img_diff0, img_diff1)
 
 
-def frame_diff_2(img_old, img_new):
+def frame_diff_2(img_old: np.ndarray, img_new: np.ndarray) -> np.ndarray:
     """
     Computes the difference between two frames
     :param img_old: the old frame
@@ -45,7 +47,7 @@ def frame_diff_2(img_old, img_new):
     return cv2.absdiff(img_new, img_old)
 
 
-def skip_frames(x):
+def skip_frames(x: int) -> None:
     for i in range(0, x):
         cam.read()
 

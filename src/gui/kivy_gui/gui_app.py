@@ -1,37 +1,68 @@
-import numpy as np
+from abc import ABC, abstractmethod
 
 from kivy.app import App
-from kivy.graphics import Rectangle
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
+from kivy.uix.video import Image
 
-
-class AppButton(Button):
-    font_size = 32
+from src.data.video import AbstractVideo, OpenCvVideo
 
 
 class GuiLayout(GridLayout):
+    pass
+
+
+class VideoPlayer(ABC):
+    def __init__(self):
+        super().__init__()
+
+    @abstractmethod
+    def load_video(self, video: AbstractVideo):
+        pass
+
+    @abstractmethod
+    def play_video(self):
+        pass
+
+    @abstractmethod
+    def stop_video(self):
+        pass
+
+    @abstractmethod
+    def trigger_video(self):
+        pass
+
+
+class OpenCvVideoPlayer(VideoPlayer, Image):
+    """OpenCV video player.
+
+    Designed to interface with OpenCvVideo objects.
+    """
     def __init__(self, **kwargs):
-        super(KivyGuiLayout, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
-        with self.canvas.before:
-            self.rect = Rectangle(size=(2000, 600), pos=self.pos)
+    def load_video(self, video: OpenCvVideo):
+        pass
 
-        self.cols = 2
-        self.rows = 1
-        self.spacing = 10
-        self.padding = 10
+    def play_video(self):
+        pass
 
+    def stop_video(self):
+        pass
 
-class VideoPlayer:
-    def __init__(self, video: np.ndarray = None):
-        self.video = video
+    def trigger_video(self):
+        pass
 
 
 class GuiApp(App):
     def __init__(self, **kwargs):
-        super(GuiApp, self).__init__(**kwargs)
-        self.video
+        super().__init__(**kwargs)
+        self.video_player = OpenCvVideoPlayer()
+        self.gui_layout = GuiLayout()
 
     def build(self):
-        return KivyGuiLayout()
+        self.gui_layout.add_widget(self.video_player)
+        return self.gui_layout
+
+    def load_video(self, video: AbstractVideo):
+        self.video_player.load_video(video)

@@ -139,11 +139,13 @@ while True:  # while there are frames
     diff = frame_diff_2(frames[frame_id - 1], frame)
     diff = frame_postprocessing(diff)
 
-    cnts = find_contours(diff)
+
+    cnts = find_contours(diff)  # get the contours
+
     # loop over the contours
     for c in cnts:
         # if the contour is too small, ignore it
-        if cv2.contourArea(c) < 250:  # 250 is the min area
+        if cv2.contourArea(c) < 100:  # 250 is the min area
             continue
 
         # compute the bounding box for the contour, draw it on the frame,
@@ -152,9 +154,23 @@ while True:  # while there are frames
         cv2.rectangle(display_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
         text = "Moving"
 
+    # colour of the text is red when the rat is moving and green when the rat is still
+    colour = (0, 0, 255)
+    if text == 'Still':
+        colour = (0, 255, 0)
+
+    # add the rat's status in text into the frame
     cv2.putText(display_frame, "Rat Status: {}".format(text), (10, 20),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, colour, 2)
+
     # cv2.imshow displays the images
     cv2.imshow('input frame', display_frame)
     cv2.imshow('frame_diff_3', diff)
-    cv2.waitKey()  # waits until the user presses a key
+
+    #cv2.waitKey()  # waits until the user presses a key (quit's on 'q' press)
+    key = cv2.waitKey(133) & 0xFF
+    if key == ord("q"):
+        break
+
+# cleanup
+cv2.destroyAllWindows()

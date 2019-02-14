@@ -156,3 +156,6 @@ videos/*
 
 # Experimentation folder
 experimentation/*
+
+# Virtual environment
+venv

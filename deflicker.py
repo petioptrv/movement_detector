@@ -15,9 +15,7 @@ def skip_frames(x: int) -> None:
 def merge_frames(frames):
     """
     Merges 3 frames together. This can be used for motion blur or to remove flicker.
-    :param f1: frame 1
-    :param f2: frame 2
-    :param f3: frame 3
+    :param: frames array of frames to merge
     :return: the merged frames
     """
 

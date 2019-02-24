@@ -23,13 +23,6 @@ def annotate_frame(frame: np.ndarray):
     return 0
 
 
-def get_next_frame():
-    # TODO: try having a buffer of 10 frames and loading new frames asynchronously
-    # IMPLEMENT THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    frame_idx += 1
-    if frame_idx ==
-
-
 def get_previous_frame():
     return 0
 

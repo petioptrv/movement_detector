@@ -15,6 +15,10 @@ class AbstractVideo(ABC):
         self.frame_rate = None
 
     @abstractmethod
+    def __iter__(self):
+        pass
+
+    @abstractmethod
     def __len__(self):
         pass
 
@@ -23,7 +27,11 @@ class AbstractVideo(ABC):
         pass
 
     @abstractmethod
-    def __iter__(self):
+    def mean(self):
+        pass
+
+    @abstractmethod
+    def std(self):
         pass
 
 
@@ -40,35 +48,8 @@ class CvVideo(AbstractVideo):
         self._mean = None
         self._std = None
 
-    def sum(self):
-        if self._sum is None:
-            max_pixel_value = 255 * self._frame_count
-            dtype = get_dtype(max_pixel_value)
-            f_sum = np.zeros(self.frame_shape, dtype=dtype)
-            self._vid.set(cv2.CAP_PROP_POS_FRAMES, 0)
-            for index in range(self._frame_count):
-                _, frame = self._vid.read()
-                f_sum += frame
-            self._sum = f_sum
-        return self._sum
-
-    def mean(self):
-        if self._mean is None:
-            self._mean = self.sum() / self._frame_count
-        return self._mean
-
-    def std(self):
-        if self._std is None:
-            mean_dtype = get_dtype(-255)  # to make sure that 0 - 255 can be represented
-            mean = self.mean().astype(mean_dtype)
-            squares_sum = 0
-            self._vid.set(cv2.CAP_PROP_POS_FRAMES, 0)
-            for index in range(self._frame_count):
-                _, frame = self._vid.read()
-                mean_diff = (frame - mean).mean()
-                squares_sum += mean_diff * mean_diff
-            self._std = math.sqrt(squares_sum / self._frame_count)
-        return self._std
+    def __iter__(self):
+        yield self._sum()
 
     def __len__(self):
         return self._frame_count
@@ -85,13 +66,40 @@ class CvVideo(AbstractVideo):
         else:
             return self._get_frame(key)
 
-    def __iter__(self):
-        yield self.sum()
+    def mean(self):
+        if self._mean is None:
+            self._mean = self._sum() / self._frame_count
+        return self._mean
+
+    def std(self):
+        if self._std is None:
+            mean_dtype = get_dtype(-255)  # to make sure that 0 - 255 can be represented
+            mean = self.mean().astype(mean_dtype)
+            squares_sum = 0
+            self._vid.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            for index in range(self._frame_count):
+                _, frame = self._vid.read()
+                mean_diff = (frame - mean).mean()
+                squares_sum += mean_diff * mean_diff
+            self._std = math.sqrt(squares_sum / self._frame_count)
+        return self._std
 
     def _get_frame(self, index):
         self._vid.set(cv2.CAP_PROP_POS_FRAMES, index)
         _, frame = self._vid.read()
         return frame
+
+    def _sum(self):
+        if self._sum is None:
+            max_pixel_value = 255 * self._frame_count
+            dtype = get_dtype(max_pixel_value)
+            f_sum = np.zeros(self.frame_shape, dtype=dtype)
+            self._vid.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            for index in range(self._frame_count):
+                _, frame = self._vid.read()
+                f_sum += frame
+            self._sum = f_sum
+        return self._sum
 
 
 class AbstractVideoPlayer(ABC):

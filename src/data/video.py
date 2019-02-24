@@ -1,27 +1,97 @@
 from abc import ABC, abstractmethod
+import math
 
-import numpy as np
 import cv2
+import pims
+import numpy as np
+
+from src.common.numpy_fns import get_dtype
 
 
 class AbstractVideo(ABC):
-    def __init__(self, file_path: str = None):
+    def __init__(self):
         super().__init__()
-        self.file_path = file_path
-        self.frame_count: int = None
+        self.frame_shape = None
+        self.frame_rate = None
+
+    @abstractmethod
+    def __len__(self):
         pass
 
     @abstractmethod
-    def current_frame(self):
+    def __getitem__(self, idx):
         pass
 
     @abstractmethod
-    def next_frame(self):
+    def __iter__(self):
         pass
 
-    @abstractmethod
-    def reset_frames(self):
-        pass
+
+class CvVideo(AbstractVideo):
+    def __init__(self, file_path: str):
+        super().__init__()
+        self._vid = cv2.VideoCapture(file_path)
+        vid_height = int(self._vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        vid_width = int(self._vid.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.frame_shape = (vid_height, vid_width, 3)
+        self.frame_rate = self._vid.get(cv2.CAP_PROP_FPS)
+        self._frame_count = len(pims.open(file_path))  # TODO: fix
+        self._sum = None
+        self._mean = None
+        self._std = None
+
+    def sum(self):
+        if self._sum is None:
+            max_pixel_value = 255 * self._frame_count
+            dtype = get_dtype(max_pixel_value)
+            f_sum = np.zeros(self.frame_shape, dtype=dtype)
+            self._vid.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            for index in range(self._frame_count):
+                _, frame = self._vid.read()
+                f_sum += frame
+            self._sum = f_sum
+        return self._sum
+
+    def mean(self):
+        if self._mean is None:
+            self._mean = self.sum() / self._frame_count
+        return self._mean
+
+    def std(self):
+        if self._std is None:
+            mean_dtype = get_dtype(-255)  # to make sure that 0 - 255 can be represented
+            mean = self.mean().astype(mean_dtype)
+            squares_sum = 0
+            self._vid.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            for index in range(self._frame_count):
+                _, frame = self._vid.read()
+                mean_diff = (frame - mean).mean()
+                squares_sum += mean_diff * mean_diff
+            self._std = math.sqrt(squares_sum / self._frame_count)
+        return self._std
+
+    def __len__(self):
+        return self._frame_count
+
+    def __getitem__(self, key):
+        if type(key) is slice:
+            indices = range(*key.indices(self._frame_count))
+            frames = np.ndarray((len(indices),) + self.frame_shape, dtype=np.uint8)
+            for i in range(len(indices)):
+                frames[i] = self._get_frame(indices[i])
+            return frames
+        elif key >= self._frame_count:
+            raise IndexError('Index out of range')
+        else:
+            return self._get_frame(key)
+
+    def __iter__(self):
+        yield self.sum()
+
+    def _get_frame(self, index):
+        self._vid.set(cv2.CAP_PROP_POS_FRAMES, index)
+        _, frame = self._vid.read()
+        return frame
 
 
 class AbstractVideoPlayer(ABC):
@@ -50,40 +120,3 @@ class AbstractVideoPlayer(ABC):
     @abstractmethod
     def reset_video(self):
         pass
-
-
-class OpenCvVideo(AbstractVideo):
-    def __init__(self, file_path: str):
-        super().__init__(file_path)
-        self.video = cv2.VideoCapture(self.file_path)
-        self.frame_count = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.frames_bgr: np.ndarray = None
-        self.frames_grey: np.ndarray = None
-        self._frame_idx = 0
-
-        self._buffer_video()
-
-    def _buffer_video(self):
-        ret, frame_bgr = self.video.read()
-        bgr_array_shape = [self.frame_count] + list(frame_bgr.shape)
-        grey_array_shape = bgr_array_shape[:-1]  # remove last dimension for BGR elements
-        self.frames_bgr = np.ndarray(bgr_array_shape)
-        self.frames_grey = np.ndarray(grey_array_shape)
-
-        for idx in range(1, self.frame_count):
-            ret, frame_bgr = self.video.read()
-            frame_grey = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2GRAY)
-            self.frames_bgr[idx] = frame_bgr
-            self.frames_grey[idx] = frame_grey
-
-    def current_frame(self) -> (np.ndarray, np.ndarray):
-        return self.frames_bgr[self._frame_idx], self.frames_grey[self._frame_idx]
-
-    def next_frame(self) -> (np.ndarray, np.ndarray):
-        self._frame_idx = (self._frame_idx + 1) % self.frame_count
-        return self.current_frame()
-
-    def reset_frames(self):
-        self._frame_idx = 0
-
-

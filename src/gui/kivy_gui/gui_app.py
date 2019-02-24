@@ -1,6 +1,5 @@
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.button import Button
 from kivy.uix.video import Image
 
 from src.data.video import OpenCvVideo

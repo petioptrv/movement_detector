@@ -1,3 +1,5 @@
 numpy
 pandas
 Kivy>=1.10.1
+opencv
+pims

@@ -12,7 +12,7 @@ def get_dtype(value):
     np_floats = [np.float16, np.float32, np.float64, np.float128]
     np_uints = [np.uint8, np.uint16, np.uint32, np.uint64]
     np_ints = [np.int8, np.int16, np.int32, np.int64]
-    if type(value) is float:
+    if isinstance(value, float):
         if value > 0:
             for _float in np_floats:
                 if np.finfo(_float).max > value:

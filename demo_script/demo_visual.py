@@ -1,9 +1,9 @@
 import os
-import math
 
-import pims
-import cv2
 import numpy as np
+import pims
+
+from src.video.video import CvVideo, PimsVideo
 
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -34,40 +34,9 @@ def main():
             setting_name, setting_value = line.split('=')
             settings[setting_name] = int(setting_value)
     video_path = input('Path to video: ')
-    pims_vid = pims.open(video_path)
-    cv2_vid = cv2.VideoCapture(video_path)
-    f_sum = np.zeros(pims_vid.frame_shape, dtype=np.int32)
-    f_count = 0
-    while True:
-        ret, frame = cv2_vid.read()
-        if ret:
-            f_sum += frame
-            f_count += 1
-        else:
-            break
-    f_mean = f_sum / f_count
-    cv2_vid = cv2.VideoCapture(video_path)
-    f_squared_diff_sum = 0
-    f_count = 0
-    while True:
-        ret, frame = cv2_vid.read()
-        if ret:
-            f_squared_diff_sum += np.mean(frame - f_mean) ** 2
-            f_count += 1
-        else:
-            break
-    f_sd = math.sqrt(f_squared_diff_sum / f_count)
-    while True:
-        frame = get_frame(frame_idx)
-        cv2.imshow('Frame', frame)
-        usr_input = cv2.waitKey(0)
-        if usr_input == 2424832:  # left key
-            if frame_idx != 1:
-                frame_idx -= 1
-        if usr_input == 2555904 or usr_input == 32:
-            if frame_idx != len(pims_vid) - 1:
-                frame_idx += 1
+    vid = CvVideo(video_path)
 
 
 if __name__ == '__main__':
+    vid = PimsVideo('/Users/petioptrv/Documents/Programming/Python/movement_detector/videos/flashing_light.mp4')
     main()

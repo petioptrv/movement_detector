@@ -2,7 +2,7 @@ from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.video import Image
 
-from src.data.video import OpenCvVideo
+from src.video.video import OpenCvVideo
 
 
 class GuiLayout(GridLayout):

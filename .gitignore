@@ -156,3 +156,7 @@ videos/*
 
 # Virtual environment
 venv
+
+#Floobits
+.flooignore
+.floo

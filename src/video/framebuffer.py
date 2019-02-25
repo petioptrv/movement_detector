@@ -13,11 +13,12 @@ class FrameBuffer:
         self._last_request = -1  # the index of the last frame that was requested
         self._hit = True  # records if the last request was a hit or a miss
 
-    def get_frame(self, frame_number):
+    def get_frame(self, frame_number, _update_buffer_on_miss=True):
         """
         Gets the frame at index frame_number from the frame buffer object (index relative to frame number, 0-indexed)
         If the frame isn't contained in the buffer, the frame will be fetched from disk and the buffer will be updated
         :param frame_number: the frame index to get (0 indexed)
+        :param _update_buffer_on_miss: if True, the buffer will be updated if the request misses
         :return: the data of the frame at index frame_number
         """
 
@@ -25,11 +26,12 @@ class FrameBuffer:
         if self._start <= frame_number <= (self._start + self._buffer_length):
             return self._buffer[frame_number - self._start]
 
-        # if the frame isn't in teh buffer
+        # if the frame isn't in the buffer
         else:
             self._hit = False
             self._last_request = frame_number
-            self._update_buffer()#  TODO: update buffer
+            if _update_buffer_on_miss:
+                self._update_buffer()
             self._frames.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
             return self._frames.read()
 

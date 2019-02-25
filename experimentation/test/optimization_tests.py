@@ -10,7 +10,7 @@ import cv2
 import pims
 import asyncio
 
-from src.video.video import CvVideo
+from src.video.video import CvVideo, PimsVideo
 
 
 BASE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
@@ -134,4 +134,7 @@ def async_video_traversals():
 
 
 if __name__ == '__main__':
+    vid = PimsVideo('/Users/petioptrv/Documents/Programming/Python/movement_detector/videos/flashing_light.mp4')
+    for frames in vid:
+        1 + 1
     async_video_traversals()

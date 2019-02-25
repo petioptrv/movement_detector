@@ -19,11 +19,15 @@ class AbstractVideo(ABC):
         pass
 
     @abstractmethod
-    def __iter__(self):
+    def __iter__(self) -> iter:
         pass
 
     @abstractmethod
-    def __len__(self):
+    def __next__(self) -> np.ndarray:
+        pass
+
+    @abstractmethod
+    def __len__(self) -> int:
         pass
 
     @abstractmethod
@@ -85,14 +89,17 @@ class PimsVideo(AbstractVideo):
         self._mean: np.ndarray = None
         self._std: np.ndarray = None
 
-    def __iter__(self):
-        self.__iter__()
+    def __iter__(self) -> iter:
+        return self._frames.__iter__()
 
-    def __len__(self):
-        self.__len__()
+    def __next__(self):
+        pass  # never gets executed
+
+    def __len__(self) -> int:
+        return self._frames.__len__()
 
     def __getitem__(self, idx: int) -> np.ndarray:
-        return self.__getitem__(idx)
+        return self._frames.__getitem__(idx)
 
     @property
     def frame_shape(self) -> tuple:
@@ -153,25 +160,41 @@ class CvVideo(AbstractVideo):
         self._std: np.ndarray = None
 
     @property
-    def frame_shape(self):
+    def frame_shape(self) -> tuple:
         return self._frame_shape
 
     @property
-    def frame_rate(self):
+    def frame_rate(self) -> float:
         return self._frame_rate
 
-    def __iter__(self):
-        yield self.sum()
+    def __iter__(self) -> iter:
+        self._frames.set(cv2.CAP_PROP_FRAME_COUNT, 0)
+        return self
 
-    def __len__(self):
+    def __next__(self) -> np.ndarray:
+        ret, frame = self._frames.read()
+        if ret:
+            return frame
+        else:
+            self._current_frame = self._frame_count
+            raise StopIteration
+
+    def __len__(self) -> int:
         return self._frame_count
 
     def __getitem__(self, key) -> np.ndarray:
         if type(key) is slice:
             indices = range(*key.indices(self._frame_count))
             frames = np.ndarray((len(indices),) + self.frame_shape, dtype=np.uint8)
-            for i in range(len(indices)):
-                frames[i] = self.get_frame(indices[i])
+            # if the indices are sequential, use optimized retrieval
+            if key[0] is None:
+                self._frames.set(cv2.CAP_PROP_POS_FRAMES, indices[0])
+                for i in range(len(indices)):
+                    _, frames[i] = self._frames.read()
+                self._current_frame = indices[-1]
+            else:
+                for i in range(len(indices)):
+                    frames[i] = self.get_frame(indices[i])
             return frames
         elif key >= self._frame_count:
             raise IndexError('Index out of range')

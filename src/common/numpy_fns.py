@@ -14,18 +14,18 @@ def get_dtype(value):
     np_ints = [np.int8, np.int16, np.int32, np.int64]
     if isinstance(value, float):
         if value > 0:
-            for _float in np_floats:
-                if np.finfo(_float).max > value:
-                    return _float
+            for float_ in np_floats:
+                if np.finfo(float_).max > value:
+                    return float_
         else:
-            for _float in np_floats:
-                if np.finfo(_float).min < value:
-                    return _float
+            for float_ in np_floats:
+                if np.finfo(float_).min < value:
+                    return float_
     elif value > 0:
-        for _uint in np_uints:
-            if np.iinfo(_uint).max > value:
-                return _uint
+        for uint_ in np_uints:
+            if np.iinfo(uint_).max > value:
+                return uint_
         else:
-            for _int in np_ints:
-                if np.iinfo(_int).min < value:
-                    return _int
+            for int_ in np_ints:
+                if np.iinfo(int_).min < value:
+                    return int_

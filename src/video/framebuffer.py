@@ -7,6 +7,8 @@ class FrameBuffer:
         self._start = -1
         if buffer_length % 2 != 0:  # making sure the buffer_length is a multiple of 2
             buffer_length += 1
+        if buffer_length < 20:
+            buffer_length = 20
         self._buffer_length = buffer_length
         self._active_buffer = 1
         self._buffer = []  # TODO: maybe consider changing this to tuples and splitting each buffer into 2 parts
@@ -61,8 +63,12 @@ class FrameBuffer:
                 self._load(load_point)
             else:
                 self._lazy_load(load_point)
-        else:
-            pass  # the request is in range, do nothing
+        else:  # the request is in range, we might want to preemptively load new data
+
+            # if the last request was close enough to the end of the buffer, we trigger a re-load
+            if self._last_request > (self._start + (self._buffer_length - 10)):
+                self._lazy_load(load_point)
+            pass
 
     def _load(self, index: int):
         """

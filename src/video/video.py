@@ -31,11 +31,11 @@ class AbstractVideo(ABC):
         pass
 
     @abstractmethod
-    def __getitem__(self, idx: int) -> np.ndarray:
+    def __getitem__(self, item) -> np.ndarray:
         pass
 
     @abstractmethod
-    def apply(self, func, *args, **kwargs):
+    def apply(self, func, *args, **kwargs) -> object:
         """
         Invoke function on each frame.
         :param func: Python function to apply.
@@ -65,8 +65,8 @@ class AbstractVideo(ABC):
     @abstractmethod
     def std(self) -> np.ndarray:
         """
-        Computes the pixel-wise standard deviation the video frames.
-        :return: Numpy array with the pixel-wise standard deviations values.
+        Computes the pixel-wise standard deviation of the video frames.
+        :return: Numpy array with the pixel-wise standard deviation values.
         """
         pass
 
@@ -98,8 +98,8 @@ class PimsVideo(AbstractVideo):
     def __len__(self) -> int:
         return self._frames.__len__()
 
-    def __getitem__(self, idx: int) -> np.ndarray:
-        return self._frames.__getitem__(idx)
+    def __getitem__(self, item: int) -> np.ndarray:
+        return self._frames.__getitem__(item)
 
     @property
     def frame_shape(self) -> tuple:
@@ -109,7 +109,7 @@ class PimsVideo(AbstractVideo):
     def frame_rate(self) -> float:
         return self._frames.frame_rate
 
-    def apply(self, func, *args, **kwargs):
+    def apply(self, func, *args, **kwargs) -> object:
         self._frames.set(cv2.CAP_PROP_POS_FRAMES, 0)
         for frame in self[:-1]:
             func(frame, *args, **kwargs)
@@ -168,7 +168,7 @@ class CvVideo(AbstractVideo):
         return self._frame_rate
 
     def __iter__(self) -> iter:
-        self._frames.set(cv2.CAP_PROP_FRAME_COUNT, 0)
+        self._frames.set(cv2.CAP_PROP_POS_FRAMES, 0)
         return self
 
     def __next__(self) -> np.ndarray:
@@ -182,12 +182,12 @@ class CvVideo(AbstractVideo):
     def __len__(self) -> int:
         return self._frame_count
 
-    def __getitem__(self, key) -> np.ndarray:
-        if type(key) is slice:
-            indices = range(*key.indices(self._frame_count))
+    def __getitem__(self, item) -> np.ndarray:
+        if type(item) is slice:
+            indices = range(*item.indices(self._frame_count))
             frames = np.ndarray((len(indices),) + self.frame_shape, dtype=np.uint8)
             # if the indices are sequential, use optimized retrieval
-            if key[0] is None:
+            if item[0] is None:
                 self._frames.set(cv2.CAP_PROP_POS_FRAMES, indices[0])
                 for i in range(len(indices)):
                     _, frames[i] = self._frames.read()
@@ -196,12 +196,12 @@ class CvVideo(AbstractVideo):
                 for i in range(len(indices)):
                     frames[i] = self.get_frame(indices[i])
             return frames
-        elif key >= self._frame_count:
+        elif item >= self._frame_count:
             raise IndexError('Index out of range')
         else:
-            return self.get_frame(key)
+            return self.get_frame(item)
 
-    def apply(self, func, *args, **kwargs):
+    def apply(self, func, *args, **kwargs) -> object:
         self._frames.set(cv2.CAP_PROP_POS_FRAMES, 0)
         for index in range(self._frame_count - 1):
             _, frame = self._frames.read()
@@ -217,9 +217,12 @@ class CvVideo(AbstractVideo):
             self._sum = np.zeros(self.frame_shape, dtype=dtype)
             self._frames.set(cv2.CAP_PROP_POS_FRAMES, 0)
             for index in range(self._frame_count):
-                _, frame = self._frames.read()
-                self._sum += frame
-            self._current_frame = self._frame_count
+                ret, frame = self._frames.read()
+                if ret:
+                    self._sum += frame
+                else:
+                    self._current_frame = self._frame_count
+                    break
         return self._sum
 
     def mean(self) -> np.ndarray:

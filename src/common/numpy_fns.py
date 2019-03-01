@@ -25,7 +25,7 @@ def get_dtype(value):
         for uint_ in np_uints:
             if np.iinfo(uint_).max > value:
                 return uint_
-        else:
-            for int_ in np_ints:
-                if np.iinfo(int_).min < value:
-                    return int_
+    else:
+        for int_ in np_ints:
+            if np.iinfo(int_).min < value:
+                return int_

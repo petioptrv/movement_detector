@@ -1,0 +1,5 @@
+freezing_window 5
+interval_start_times 0 10 15
+outlier_change_threshold 2
+flag_outliers_window 8
+sensitivity 21

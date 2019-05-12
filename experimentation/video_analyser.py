@@ -162,6 +162,8 @@ while True:  # while there are frames
     # add the rat's status in text into the frame
     cv2.putText(display_frame, "Rat Status: {}".format(text), (10, 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, colour, 2)
+    cv2.putText(display_frame, "Rat Status2: {}".format(text), (10, 40),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, colour, 2)
 
     # cv2.imshow displays the images
     cv2.imshow('input frame', display_frame)

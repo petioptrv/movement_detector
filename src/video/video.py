@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from typing import Any, Callable
+import os
 
 import cv2
 import pims
@@ -8,6 +10,10 @@ from src.common.numpy_fns import get_dtype
 
 
 class AbstractVideo(ABC):
+    def __init__(self, file_path: str):
+        self.vid_path = file_path
+        self.vid_name = os.path.basename(self.vid_path)
+
     @property
     @abstractmethod
     def frame_shape(self) -> tuple:
@@ -35,7 +41,7 @@ class AbstractVideo(ABC):
         pass
 
     @abstractmethod
-    def apply(self, func, *args, **kwargs) -> object:
+    def apply(self, func: Callable[[tuple, dict], Any], *args, **kwargs) -> Any:
         """
         Invoke function on each frame.
         :param func: Python function to apply.
@@ -82,8 +88,8 @@ class AbstractVideo(ABC):
 class PimsVideo(AbstractVideo):
     # TODO: Make PimsVideo subclass pims.ImageIOReader
     def __init__(self, file_path: str):
-        AbstractVideo.__init__(self)
-        self._frames = pims.open(file_path)
+        AbstractVideo.__init__(self, file_path)
+        self._frames = pims.open(self.vid_path)
         self._frame_count = len(self._frames)
         self._sum: np.ndarray = None
         self._mean: np.ndarray = None
@@ -109,11 +115,11 @@ class PimsVideo(AbstractVideo):
     def frame_rate(self) -> float:
         return self._frames.frame_rate
 
-    def apply(self, func, *args, **kwargs) -> object:
+    def apply(self, func: Callable[[tuple, dict], Any], *args, **kwargs) -> Any:
         self._frames.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        for frame in self[:-1]:
+        for frame in self._frames[:-1]:
             func(frame, *args, **kwargs)
-        return func(self[-1], *args, **kwargs)
+        return func(self._frames[-1], *args, **kwargs)
 
     def get_frame(self, i: int) -> np.ndarray:
         return self._frames.get_frame(i)
@@ -147,17 +153,20 @@ class PimsVideo(AbstractVideo):
 
 class CvVideo(AbstractVideo):
     def __init__(self, file_path: str):
-        super().__init__()
-        self._frames = cv2.VideoCapture(file_path)
+        AbstractVideo.__init__(self, file_path)
+        self._frames = cv2.VideoCapture(self.vid_path)
         vid_height = int(self._frames.get(cv2.CAP_PROP_FRAME_HEIGHT))
         vid_width = int(self._frames.get(cv2.CAP_PROP_FRAME_WIDTH))
         self._frame_shape = (vid_height, vid_width, 3)
         self._frame_rate = self._frames.get(cv2.CAP_PROP_FPS)
-        self._frame_count = len(pims.open(file_path))  # TODO: fix; Note: cv2 gives me len + 1 frames for mp4 -- why?
+        self._frame_count = int(self._frames.get(cv2.CAP_PROP_FRAME_COUNT))
         self._current_frame = 0
+        # fix the problem where open CV returns one more than the actual video length
         self._sum: np.ndarray = None
         self._mean: np.ndarray = None
         self._std: np.ndarray = None
+        while self.get_frame(self._frame_count) is None:
+            self._frame_count -= 1
 
     @property
     def frame_shape(self) -> tuple:
@@ -187,7 +196,7 @@ class CvVideo(AbstractVideo):
             indices = range(*item.indices(self._frame_count))
             frames = np.ndarray((len(indices),) + self.frame_shape, dtype=np.uint8)
             # if the indices are sequential, use optimized retrieval
-            if item[0] is None:
+            if item.step in [None, 1]:
                 self._frames.set(cv2.CAP_PROP_POS_FRAMES, indices[0])
                 for i in range(len(indices)):
                     _, frames[i] = self._frames.read()
@@ -201,7 +210,7 @@ class CvVideo(AbstractVideo):
         else:
             return self.get_frame(item)
 
-    def apply(self, func, *args, **kwargs) -> object:
+    def apply(self, func: Callable[[tuple, dict], Any], *args, **kwargs) -> Any:
         self._frames.set(cv2.CAP_PROP_POS_FRAMES, 0)
         for index in range(self._frame_count - 1):
             _, frame = self._frames.read()

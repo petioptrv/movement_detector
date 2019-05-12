@@ -1,5 +1,6 @@
-numpy
-pandas
-Kivy>=1.10.1
+numpy==1.16.2
+pandas==0.24.2
+opencv-python==3.4.2
+scipy==1.2.1
 opencv
 pims

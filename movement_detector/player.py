@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from src.video.video import AbstractVideo
+from movement_detector.video import AbstractVideo
 
 
 class AbstractVideoPlayer(ABC):

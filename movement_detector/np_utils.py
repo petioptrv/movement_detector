@@ -3,9 +3,10 @@ import numpy as np
 
 def get_dtype(value):
     """
-    Returns the largest numpy value-type capable of representing the passed-in value.
-    If the largest float needed, value must be a float. If signed numbers are needed, value must
-    be passed as negative (note that floats are always signed).
+    Returns the largest numpy value-type capable of representing the passed-in
+    value. If the largest float needed, value must be a float. If signed numbers
+    are needed, value must be passed as negative (note that floats are always
+    signed).
     :param value: The value to be represented.
     :return:
     """

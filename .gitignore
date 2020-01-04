@@ -160,3 +160,4 @@ venv
 #Floobits
 .flooignore
 .floo
+.idea/inspectionProfiles/

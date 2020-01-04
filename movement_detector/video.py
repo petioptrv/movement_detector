@@ -6,7 +6,7 @@ import cv2
 import pims
 import numpy as np
 
-from src.common.numpy_fns import get_dtype
+from movement_detector.np_utils import get_dtype
 
 
 class AbstractVideo(ABC):
@@ -128,7 +128,7 @@ class PimsVideo(AbstractVideo):
         if self._sum is None:
             max_pixel_value = 255 * self._frame_count
             dtype = get_dtype(max_pixel_value)
-            self._sum = np.zeros(self.frame_shape, dtype=dtype)
+            self._sum = np.empty(self.frame_shape, dtype=dtype)
             for frame in self:
                 self._sum += frame
         return self._sum
@@ -140,9 +140,14 @@ class PimsVideo(AbstractVideo):
 
     def std(self) -> np.ndarray:
         if self._std is None:
-            mean_dtype = get_dtype(-255)  # to make sure that 0 - 255 can be represented
+            # to make sure that 0 - 255 can be represented
+            # when computing mean_diff below
+            mean_dtype = get_dtype(-255)
             mean = self.mean().astype(mean_dtype)
-            squares_sum = np.zeros(self.frame_shape, dtype=get_dtype(255 * 255 * self._frame_count))
+            squares_sum = np.empty(
+                shape=self.frame_shape,
+                dtype=get_dtype(255 * 255 * self._frame_count)
+            )
             self._frames.set(cv2.CAP_PROP_POS_FRAMES, 0)
             for frame in self:
                 mean_diff = frame - mean
@@ -155,18 +160,20 @@ class CvVideo(AbstractVideo):
     def __init__(self, file_path: str):
         AbstractVideo.__init__(self, file_path)
         self._frames = cv2.VideoCapture(self.vid_path)
+        self.frame_count = int(self._frames.get(cv2.CAP_PROP_FRAME_COUNT))
         vid_height = int(self._frames.get(cv2.CAP_PROP_FRAME_HEIGHT))
         vid_width = int(self._frames.get(cv2.CAP_PROP_FRAME_WIDTH))
         self._frame_shape = (vid_height, vid_width, 3)
         self._frame_rate = self._frames.get(cv2.CAP_PROP_FPS)
-        self._frame_count = int(self._frames.get(cv2.CAP_PROP_FRAME_COUNT))
         self._current_frame = 0
-        # fix the problem where open CV returns one more than the actual video length
         self._sum: np.ndarray = None
         self._mean: np.ndarray = None
         self._std: np.ndarray = None
-        while self.get_frame(self._frame_count) is None:
-            self._frame_count -= 1
+        # fix the problem where open CV returns one more than
+        # the actual video length
+        while self.get_frame(self.frame_count) is None:
+            self.frame_count -= 1
+        self.size = int(np.prod(self._frame_shape + (self.frame_count, 8)))
 
     @property
     def frame_shape(self) -> tuple:
@@ -185,16 +192,19 @@ class CvVideo(AbstractVideo):
         if ret:
             return frame
         else:
-            self._current_frame = self._frame_count
+            self._current_frame = self.frame_count
             raise StopIteration
 
     def __len__(self) -> int:
-        return self._frame_count
+        return self.frame_count
 
     def __getitem__(self, item) -> np.ndarray:
         if type(item) is slice:
-            indices = range(*item.indices(self._frame_count))
-            frames = np.ndarray((len(indices),) + self.frame_shape, dtype=np.uint8)
+            indices = range(*item.indices(self.frame_count))
+            frames = np.empty(
+                shape=(len(indices),) + self.frame_shape,
+                dtype=np.uint8
+            )
             # if the indices are sequential, use optimized retrieval
             if item.step in [None, 1]:
                 self._frames.set(cv2.CAP_PROP_POS_FRAMES, indices[0])
@@ -205,53 +215,57 @@ class CvVideo(AbstractVideo):
                 for i in range(len(indices)):
                     frames[i] = self.get_frame(indices[i])
             return frames
-        elif item >= self._frame_count:
+        elif item >= self.frame_count:
             raise IndexError('Index out of range')
         else:
             return self.get_frame(item)
 
     def apply(self, func: Callable[[tuple, dict], Any], *args, **kwargs) -> Any:
         self._frames.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        for index in range(self._frame_count - 1):
+        for index in range(self.frame_count - 1):
             _, frame = self._frames.read()
             func(frame, *args, **kwargs)
         _, frame = self._frames.read()
-        self._current_frame = self._frame_count
+        self._current_frame = self.frame_count
         return func(frame, *args, **kwargs)
 
     def sum(self) -> np.ndarray:
         if self._sum is None:
-            max_pixel_value = 255 * self._frame_count
+            max_pixel_value = 255 * self.frame_count
             dtype = get_dtype(max_pixel_value)
-            self._sum = np.zeros(self.frame_shape, dtype=dtype)
+            self._sum = np.empty(self.frame_shape, dtype=dtype)
             self._frames.set(cv2.CAP_PROP_POS_FRAMES, 0)
-            for index in range(self._frame_count):
+            for index in range(self.frame_count):
                 ret, frame = self._frames.read()
                 if ret:
                     self._sum += frame
                 else:
-                    self._current_frame = self._frame_count
+                    self._current_frame = self.frame_count
                     break
         return self._sum
 
     def mean(self) -> np.ndarray:
         if self._mean is None:
-            self._mean = self.sum() / self._frame_count
-            self._current_frame = self._frame_count
+            self._mean = self.sum() / self.frame_count
         return self._mean
 
     def std(self) -> np.ndarray:
         if self._std is None:
-            mean_dtype = get_dtype(-255)  # to make sure that 0 - 255 can be represented
+            # to make sure that 0 - 255 can be represented
+            # when computing mean_diff below
+            mean_dtype = get_dtype(-255)
             mean = self.mean().astype(mean_dtype)
-            squares_sum = np.zeros(self.frame_shape, dtype=get_dtype(255 * 255 * self._frame_count))
+            squares_sum = np.empty(
+                shape=self.frame_shape,
+                dtype=get_dtype(255 * 255 * self.frame_count)
+            )
             self._frames.set(cv2.CAP_PROP_POS_FRAMES, 0)
-            for index in range(self._frame_count):
+            for index in range(self.frame_count):
                 _, frame = self._frames.read()
                 mean_diff = frame - mean
                 squares_sum += mean_diff * mean_diff
-            self._std = np.sqrt(squares_sum / self._frame_count)
-            self._current_frame = self._frame_count
+            self._std = np.sqrt(squares_sum / self.frame_count)
+            self._current_frame = self.frame_count
         return self._std
 
     def get_frame(self, i: int) -> np.ndarray:

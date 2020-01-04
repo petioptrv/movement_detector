@@ -6,10 +6,10 @@ import time
 import cv2
 import pandas as pd
 
-from src.video.video import CvVideo
-from src.video.analysis import PixelChangeDetector
-from src.common.resource_manager import ResourceManager
-from src.common.settings import PixelChangeSettings
+from movement_detector.video import CvVideo
+from movement_detector.analysis import PixelChangeDetector
+from movement_detector.resource_manager import ResourceManager
+from movement_detector.settings import PixelChangeSettings
 
 
 def main():

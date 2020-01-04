@@ -1,9 +1,8 @@
-from typing import Callable
 from queue import Queue
 import time
 from threading import Thread
 
-from src.common.settings import SystemSettings
+from movement_detector.settings import SystemSettings
 
 
 class ResourceManager(Thread):

@@ -6,7 +6,7 @@ setup(
     version='0.1.0',
     description='Detect movement in videos.',
     url={'Documentation': '', 'Source': ''},
-    author='Petio Petrov, Bruno Robert',
+    author='Petio Petrov',
     license='GNU GPLv3',
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -28,6 +28,8 @@ setup(
         'dev': [
             'pytest',
             'sphinx',
+            'sphinx_rtd_theme',
+            'numpydoc',
         ]
     },
     package_dir={'': ''},

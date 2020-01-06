@@ -1,4 +1,4 @@
-# movement_detector
+# Movement Detector
 
 INSTALLATION
 

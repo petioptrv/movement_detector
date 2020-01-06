@@ -7,7 +7,7 @@ import cv2
 import pandas as pd
 
 from movement_detector.video import CvVideo
-from movement_detector.analysis import PixelChangeDetector
+from movement_detector.detectors import PixelChangeDetector
 from movement_detector.resource_manager import ResourceManager
 from movement_detector.settings import PixelChangeSettings
 
@@ -44,7 +44,7 @@ def main():
     for video_path in video_paths:
         analyzer = PixelChangeDetector(CvVideo(video_path), settings)
         analyzers.append((video_path, analyzer))
-        job_queue.put((analyzer.process_video, (), {'timit': True}))
+        job_queue.put((analyzer.run, (), {'timit': True}))
     job_queue.put((ResourceManager.stop, (), None))
     a_idx = 0
     switch = False

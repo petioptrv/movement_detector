@@ -9,7 +9,6 @@ import pandas as pd
 import cv2
 from scipy import stats
 
-from movement_detector.analysis import AbstractMetaAnalyzer
 from movement_detector.utils import get_video_mapped_path
 from movement_detector.video import AbstractVideo
 
@@ -46,7 +45,6 @@ class AbstractMovementDetector(ABC):
     def __init__(
             self,
             video: AbstractVideo,
-            meta_analyzer: AbstractMetaAnalyzer
     ):
         """
         Parameters
@@ -55,7 +53,6 @@ class AbstractMovementDetector(ABC):
             The video object.
         """
         self._video = video
-        self._meta_analyzer = meta_analyzer
         self._meta_path = None
         self.meta_fields = self._default_cols
         self.meta_fields += self._additional_columns
@@ -68,14 +65,6 @@ class AbstractMovementDetector(ABC):
     @video.setter
     def video(self, other):
         raise AttributeError('Cannot set the video attribute.')
-
-    @property
-    def meta_analyzer(self) -> AbstractMetaAnalyzer:
-        return self._meta_analyzer
-
-    @meta_analyzer.setter
-    def meta_analyzer(self, other):
-        raise AttributeError('Cannot set the meta_analyzer attribute.')
 
     @property
     def meta_built(self) -> bool:
@@ -127,8 +116,7 @@ class AbstractMovementDetector(ABC):
         else:
             self._create_empty_meta()
             self._build_meta()
-            self._save_meta()
-        self.meta_analyzer.run(df=self._metadata)
+            self.save_meta()
 
     def meta(
             self,
@@ -190,7 +178,7 @@ class AbstractMovementDetector(ABC):
             ['moving', 'manual_set', 'flagged']
         ] = True, True, False
 
-    def _save_meta(self):
+    def save_meta(self):
         parent = self.meta_path.parent
         if not os.path.exists(parent):
             os.makedirs(parent)
@@ -220,7 +208,6 @@ class PixelChangeFD(AbstractMovementDetector):
     def __init__(
             self,
             video: AbstractVideo,
-            meta_analyzer: AbstractMetaAnalyzer,
             # settings
             outlier_change_threshold: float,
             flag_outliers_buffer: int,
@@ -228,7 +215,7 @@ class PixelChangeFD(AbstractMovementDetector):
             freezing_buffer: int,
             blur_ksize: int,
     ):
-        super().__init__(video=video, meta_analyzer=meta_analyzer)
+        super().__init__(video=video)
         self.outlier_change_threshold = outlier_change_threshold
         self.flag_outliers_buffer = flag_outliers_buffer
         self.movement_threshold = movement_threshold

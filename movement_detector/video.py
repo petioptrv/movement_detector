@@ -16,6 +16,16 @@ class AbstractVideo(ABC):
 
     @property
     @abstractmethod
+    def vid_duration(self) -> float:
+        """The duration of the video in seconds.
+
+        Returns
+        -------
+        float
+        """
+
+    @property
+    @abstractmethod
     def frame_shape(self) -> tuple:
         """The shape of a single frame.
 
@@ -141,6 +151,10 @@ class PimsVideo(AbstractVideo):
         return self._frames.__getitem__(item)
 
     @property
+    def vid_duration(self) -> float:
+        return self._frames.duration
+
+    @property
     def frame_shape(self) -> tuple:
         return self._frames.frame_shape
 
@@ -205,6 +219,10 @@ class CvVideo(AbstractVideo):
         while self.get_frame(self._frame_count) is None:
             self._frame_count -= 1
         self.size = int(np.prod(self._frame_shape + (self._frame_count, 8)))
+
+    @property
+    def vid_duration(self) -> float:
+        return self._frames.get(cv2.CAP_PROP_POS_MSEC)
 
     @property
     def frame_shape(self) -> tuple:

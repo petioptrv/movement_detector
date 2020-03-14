@@ -31,11 +31,19 @@ class Interface:
         quit_ = False
         keys = None
         key_repeat = 0
+        command_text = ''
+        command_print_count = 0
+        command_print_max = max(self._key_repeat_buffer, 10)
         while True:
             if self._frame_index == len(self.detector.video):
                 self._play_video = False
             else:
-                frame = self._build_frame()
+                frame = self._build_frame(action_text=command_text)
+                if command_text != '':
+                    command_print_count += 1
+                    if command_print_count == command_print_max:
+                        command_text = ''
+                        command_print_count = 0
             pygame.display.set_caption(
                 f'{vid_name} - Frame {self._frame_index + 1}'
             )
@@ -57,19 +65,33 @@ class Interface:
                 key_repeat += 1
             keys = new_keys
             if key_repeat == 0 or key_repeat > self._key_repeat_buffer:
-                self._parse_command(keys=keys)
-            self._clock.tick(self._playback_frame_rate)
+                new_command_text = self._parse_command(keys=keys)
+                if new_command_text != '':
+                    command_text = new_command_text
             if self._play_video:
+                self._clock.tick(self._playback_frame_rate)
                 self._frame_index += 1
+            else:
+                self._clock.tick()
         return keys
 
-    def _build_frame(self):
+    def _build_frame(self, action_text=''):
         frame = self.detector.video[self._frame_index]
         meta_data = self.detector.meta(
             start=self._frame_index,
             stop=self._frame_index + 1
         )
+        self._add_moving_text(frame=frame, meta_data=meta_data)
+        self._add_outlier_text(frame=frame, meta_data=meta_data)
+        self._add_frame_rate_text(frame=frame)
+        self._add_action_text(frame=frame, action_text=action_text)
+        frame = np.flipud(np.rot90(frame))
+        # frame = pygame.surfarray.make_surface(frame)
 
+        return frame
+
+    @staticmethod
+    def _add_moving_text(frame, meta_data):
         if pd.isna(meta_data['moving'].iloc[0]):
             colour = (0, 0, 255)
             status_text = 'Loading info'
@@ -88,6 +110,9 @@ class Interface:
             color=colour,
             thickness=2,
         )
+
+    @staticmethod
+    def _add_outlier_text(frame, meta_data):
         outlier_text = ''
         if pd.isna(meta_data['outlier'].iloc[0]):
             colour = (0, 0, 255)
@@ -98,6 +123,8 @@ class Interface:
         elif meta_data['flagged'].iloc[0]:
             colour = (0, 0, 255)
             outlier_text = 'Flagged'
+        else:
+            colour = (255, 165, 0)
         cv2.putText(
             img=frame,
             text=outlier_text,
@@ -107,27 +134,52 @@ class Interface:
             color=colour,
             thickness=2
         )
-        frame = np.flipud(np.rot90(frame))
-        # frame = pygame.surfarray.make_surface(frame)
 
-        return frame
+    def _add_frame_rate_text(self, frame):
+        frame_rate = np.round(self._playback_frame_rate, decimals=2)
+        frame_rate_text = f'Frame rate: {frame_rate}'
+        cv2.putText(
+            img=frame,
+            text=frame_rate_text,
+            org=(10, 60),
+            fontFace=cv2.FONT_HERSHEY_COMPLEX,
+            fontScale=.5,
+            color=(255, 165, 0),
+            thickness=2
+        )
+
+    def _add_action_text(self, frame, action_text):
+        cv2.putText(
+            img=frame,
+            text=action_text,
+            org=(10, 80),
+            fontFace=cv2.FONT_HERSHEY_COMPLEX,
+            fontScale=.5,
+            color=(255, 165, 0),
+            thickness=2
+        )
 
     def _parse_command(self, keys):
+        command_text = ''
         if not self._play_video:
             if keys[pygame.K_LEFT]:
                 if self._frame_index != 0:
                     self._frame_index -= 1
+                    command_text = 'Previous frame'
             elif keys[pygame.K_RIGHT]:
                 if self._frame_index != len(self.detector.video) - 1:
                     self._frame_index += 1
+                    command_text = 'Next frame'
             elif keys[ord('f')]:
                 self.detector.set_freezing(self._frame_index)
                 if self._frame_index != len(self.detector.video) - 1:
                     self._frame_index += 1
+                    command_text = 'Set freezing'
             elif keys[ord('m')]:
                 self.detector.set_moving(self._frame_index)
                 if self._frame_index != len(self.detector.video) - 1:
                     self._frame_index += 1
+                    command_text = 'Set moving'
             elif keys[ord('n')]:
                 search_started = False
                 while True:
@@ -142,6 +194,7 @@ class Interface:
                     else:
                         search_started = True
                     self._frame_index += 1
+                command_text = 'Found next flagged'
             elif keys[ord('p')]:
                 search_started = False
                 while True:
@@ -156,16 +209,22 @@ class Interface:
                     else:
                         search_started = True
                     self._frame_index -= 1
+                command_text = 'Found previous flagged'
             elif keys[ord(' ')] and not self._space_pressed:
                 self._space_pressed = True
                 self._play_video = True
+                command_text = 'Play'
         else:  # video is playing
             if keys[ord(' ')] and not self._space_pressed:
                 self._space_pressed = True
                 self._play_video = False
+                command_text = 'Pause'
             elif keys[pygame.K_UP]:
                 # max_frame_rate = self.detector.video.frame_rate * 2
                 # if not self._playback_frame_rate + 1 > max_frame_rate:
                 self._playback_frame_rate += 1
+                command_text = 'Speed up'
             elif keys[pygame.K_DOWN] and self._playback_frame_rate - 1 > 0:
                 self._playback_frame_rate -= 1
+                command_text = 'Slow down'
+        return  command_text

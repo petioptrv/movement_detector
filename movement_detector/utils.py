@@ -50,6 +50,6 @@ def _is_video_file(path) -> bool:
     valid = True
     if not os.path.isfile(path):
         valid = False
-    elif not (path.endswith('.mp4')):
+    elif not (path.endswith(('.mp4', '.wmv'))):
         valid = False
     return valid

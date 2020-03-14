@@ -32,25 +32,26 @@ def main():
     vid_paths = get_video_paths()
     for video_path in vid_paths:
         video = CvVideo(file_path=video_path)
-        meta_analyzer = IntervalAggregatorMA(
-            vid_path=video_path,
-            intervals=settings['intervals'],
-            aggregation=lambda x: 1 - np.mean(x)
-        )
         detector = PixelChangeFD(
             video=video,
-            meta_analyzer=meta_analyzer,
             outlier_change_threshold=settings.get(
-                'outlier_change_threshold', .2
+                'outlier_change_threshold', .5
             ),
             flag_outliers_buffer=settings.get('flag_outliers_buffer', 5),
-            movement_threshold=settings.get('movement_threshold', .1),
-            freezing_buffer=settings.get('freezing_buffer', 3),
+            movement_threshold=settings.get('movement_threshold', 100),
+            freezing_buffer=settings.get('freezing_buffer', 5),
             blur_ksize=settings.get('blur_ksize', 3),
         )
         detector.run()
         visualizer = Interface(detector=detector)
         visualizer.display()
+        detector.save_meta()
+        meta_analyzer = IntervalAggregatorMA(
+            detector=detector,
+            intervals=settings['intervals'],
+            aggregation=lambda x: 1 - np.mean(x)
+        )
+        meta_analyzer.run()
 
 
 if __name__ == '__main__':

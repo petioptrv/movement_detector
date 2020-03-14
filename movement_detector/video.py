@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Any, Callable
 import os
+from typing import Optional
 
 import cv2
 import pims
@@ -11,7 +11,7 @@ from movement_detector.np_utils import get_dtype
 
 class AbstractVideo(ABC):
     def __init__(self, file_path: str):
-        self.vid_path = file_path
+        self.vid_path = os.path.realpath(file_path)
         self.vid_name = os.path.basename(self.vid_path)
 
     @property
@@ -65,6 +65,22 @@ class AbstractVideo(ABC):
         -------
         NumPy array
             The frame as a NumPy array.
+        """
+        pass
+
+    @abstractmethod
+    def get_frame_time(self, i: Optional[int] = None) -> float:
+        """Returns the video-time for the frame i in seconds.
+
+        Parameters
+        ----------
+        i : int
+            Index of desired frame time.
+
+        Returns
+        -------
+        float
+            The time in seconds since start of video.
         """
         pass
 
@@ -136,6 +152,9 @@ class PimsVideo(AbstractVideo):
         frame = self._frames.get_frame(i)
         return frame
 
+    def get_frame_time(self, i: int) -> float:
+        raise NotImplemented
+
     def sum(self) -> np.ndarray:
         if self._sum is None:
             max_pixel_value = 255 * self._frame_count
@@ -170,7 +189,7 @@ class PimsVideo(AbstractVideo):
 
 class CvVideo(AbstractVideo):
     def __init__(self, file_path: str):
-        AbstractVideo.__init__(self, file_path)
+        super().__init__(file_path)
         self._frames = cv2.VideoCapture(self.vid_path)
         self._frame_count = int(self._frames.get(cv2.CAP_PROP_FRAME_COUNT))
         vid_height = int(self._frames.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -271,9 +290,16 @@ class CvVideo(AbstractVideo):
             self._current_frame = self._frame_count
         return self._std
 
-    def get_frame(self, i: int) -> np.ndarray:
-        if self._current_frame != i:
+    def get_frame(self, i: Optional[int] = None) -> np.ndarray:
+        if i is not None and self._current_frame != i:
             self._frames.set(cv2.CAP_PROP_POS_FRAMES, i)
+            self._current_frame = i
         _, frame = self._frames.read()
-        self._current_frame = i + 1
+        self._current_frame += 1
         return frame
+
+    def get_frame_time(self, i: Optional[int] = None) -> float:
+        if i is not None:
+            self.get_frame(i=i)
+        frame_time = self._frames.get(cv2.CAP_PROP_POS_MSEC) / 1000
+        return frame_time

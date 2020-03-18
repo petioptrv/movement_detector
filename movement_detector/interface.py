@@ -22,19 +22,22 @@ class Interface:
         )
         self._clock = pygame.time.Clock()
         self._space_pressed = False
-        self._key_repeat_buffer = 20
+        self._key_repeat_buffer = 600
 
     def display(self, stop_keys=('N', 'P', 27)):
         vid_name = self.detector.video.vid_name
         self._play_video = False
         self._frame_index = 0
+        time_since_last_frame = 0
         quit_ = False
         keys = None
-        key_repeat = 0
         command_text = ''
         command_print_count = 0
         command_print_max = max(self._key_repeat_buffer, 10)
+        keys_pressed = []
+        time_since_key_press = 0
         while True:
+            tick = self._clock.tick()
             if self._frame_index == len(self.detector.video):
                 self._play_video = False
             else:
@@ -50,30 +53,33 @@ class Interface:
             pygame.surfarray.blit_array(self._player, frame)
             pygame.display.update()
 
+            keys_pressed = pygame.key.get_pressed()
+            if any(keys_pressed):
+                if (time_since_key_press == 0
+                        or time_since_key_press >= self._key_repeat_buffer):
+                    new_command_text = self._parse_command(keys=keys_pressed)
+                time_since_key_press += tick
+                if new_command_text != '':
+                    command_text = new_command_text
+            else:
+                time_since_key_press = 0
+                if self._space_pressed:
+                    self._space_pressed = False
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit_ = True
-                elif event.type == pygame.KEYUP:
-                    if self._space_pressed:
-                        self._space_pressed = False
-                    key_repeat = 0
             if quit_:
                 break
-            new_keys = pygame.key.get_pressed()
-            if new_keys == keys:
-                key_repeat += 1
-            keys = new_keys
-            if key_repeat == 0 or key_repeat > self._key_repeat_buffer:
-                new_command_text = self._parse_command(keys=keys)
-                if new_command_text != '':
-                    command_text = new_command_text
             if self._play_video:
-                self._clock.tick(self._playback_frame_rate)
-                self._frame_index += 1
+                time_since_last_frame += tick
+                if time_since_last_frame >= 1/self._playback_frame_rate:
+                    self._frame_index += 1
+                    time_since_last_frame = 0
             else:
-                self._clock.tick()
-        return keys
+                time_since_last_frame = 0
+        return keys_pressed
 
     def _build_frame(self, action_text=''):
         frame = self.detector.video[self._frame_index]

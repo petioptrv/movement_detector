@@ -29,7 +29,8 @@ author = 'Petio Petrov'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'numpydoc',
+    'sphinxcontrib.napoleon',
+    # 'sphinx_autodoc_napoleon_typehints',
 ]
 
 numpydoc_class_members_toctree = False

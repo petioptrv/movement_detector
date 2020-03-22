@@ -8,7 +8,7 @@ INSTALL_PACKAGES = [
     'pandas==1.0.1',
     'scipy==1.4.1',
     'opencv-python==4.1.0.25',
-    'pims==0.4.1',
+    'moviepy==1.0.1',
     'imageio==2.6.1',
     'pygame==1.9.6',
     'PyYAML>=5.1',

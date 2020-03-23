@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def get_dtype(value: np.numeric):
+def get_dtype(value: np.number):
     """
     Returns the largest numpy value-type capable of representing the passed-in
     value. If the largest float needed, value must be a float. If signed numbers

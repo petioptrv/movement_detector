@@ -16,10 +16,12 @@ from movement_detector.video import AbstractVideo
 class AbstractMovementDetector(ABC):
     """Abstract class for all movement detectors.
 
-    Contains a `metadata` data frame. Each row holds the the metadata for
-    a single video frame.
+    Contains the metadata for all frames in the video.
 
-    Metadata data frames contain the following fields:
+    Each frame's metadata contains the following fields:
+
+    **time**: The timestamp for the frame in seconds since the start of the
+    video.
 
     **moving**: Set to True if there is movement in the frame.
 
@@ -30,8 +32,13 @@ class AbstractMovementDetector(ABC):
     **manual_set**: Set to True if the `moving` filed has been manually
     overwritten.
 
-    **flagged**: Set to True for frames flagged as outliers by the detector, and
-    changed to False if the `moving` filed value is manually overwritten.
+    **flagged**: Set to True for frames outlier frames, and
+    changed to False upon manual-set.
+
+    Parameters
+    ----------
+    video : AbstractVideo
+        The video object.
     """
 
     _default_cols = (
@@ -46,12 +53,6 @@ class AbstractMovementDetector(ABC):
             self,
             video: AbstractVideo,
     ):
-        """
-        Parameters
-        ----------
-        video : AbstractVideo
-            The video object.
-        """
         self._video = video
         self._meta_path = None
         self.meta_fields = self._default_cols
@@ -60,27 +61,17 @@ class AbstractMovementDetector(ABC):
 
     @property
     def video(self) -> AbstractVideo:
+        """The video associated with the detector."""
         return self._video
-
-    @video.setter
-    def video(self, other):
-        raise AttributeError('Cannot set the video attribute.')
 
     @property
     def meta_built(self) -> bool:
-        """
-        Returns True if the video has been processed and the
-        metadata is available.
-
-        Returns
-        -------
-        bool
-            Whether the metadata has been already built.
-        """
+        """Set to True if the metadata has been built."""
         return self._meta_built
 
     @property
     def meta_path(self) -> Path:
+        """Path to metadata file."""
         if self._meta_path is None:
             self._meta_path = get_video_mapped_path(
                 vid_path=self.video.vid_path,
@@ -91,26 +82,19 @@ class AbstractMovementDetector(ABC):
 
     @property
     def _additional_columns(self) -> Tuple[str]:
-        """
-        Additional meta-data columns to add to the default set.
+        """Additional meta-data columns to add to the default set.
 
-        Returns
-        -------
-        list
-            A list of the additional meta-data columns.
+        Must return a tuple of zero or more strings.
         """
         return tuple()
 
     @abstractmethod
     def _build_meta(self):
+        """Overwrite this method to define the metadata generation process."""
         pass
 
     def run(self):
-        """
-        Process the video and extract the meta-data.
-        See the concrete class' documentation for more details.
-        """
-
+        """Process the video and extract the meta-data."""
         if os.path.exists(self.meta_path):
             self._load_meta()
         else:
@@ -124,8 +108,7 @@ class AbstractMovementDetector(ABC):
             stop: Optional[int] = None,
             field: Optional[Union[str, list]] = None
     ) -> Union[pd.DataFrame, pd.Series, Any]:
-        """
-        Returns a Pandas DataFrame of the required analysis metadata.
+        """Returns a Pandas DataFrame of the required analysis metadata.
 
         Parameters
         ----------
@@ -149,8 +132,8 @@ class AbstractMovementDetector(ABC):
         return self._metadata.iloc[start:stop][field]
 
     def set_freezing(self, index: int):
-        """
-        Set metadata of specified frame to freezing.
+        """Set metadata of specified frame to freezing.
+
         Frame is marked as user-verified, and flagging is removed.
 
         Parameters
@@ -158,14 +141,13 @@ class AbstractMovementDetector(ABC):
         index : int
             Index of frame which to set as freezing.
         """
-        self._metadata.loc[
-            index,
-            ['moving', 'manual_set', 'flagged']
-        ] = False, True, False
+        col_names = ['moving', 'manual_set', 'flagged']
+        col_vals = [False, True, False]
+        self._metadata.loc[index, col_names] = col_vals
 
     def set_moving(self, index: int):
-        """
-        Set metadata of specified frame to moving.
+        """Set metadata of specified frame to moving.
+
         Frame is marked as user-verified, and flagging is removed.
 
         Parameters
@@ -173,12 +155,16 @@ class AbstractMovementDetector(ABC):
         index : int
             Index of frame which to set as moving.
         """
-        self._metadata.loc[
-            index,
-            ['moving', 'manual_set', 'flagged']
-        ] = True, True, False
+        col_names = ['moving', 'manual_set', 'flagged']
+        col_vals = [True, True, False]
+        self._metadata.loc[index, col_names] = col_vals
 
     def save_meta(self):
+        """Save the metadata to file.
+
+        The file path relative to the `meta` folder is the same as the video's
+        path relative to the `video` folder.
+        """
         parent = self.meta_path.parent
         if not os.path.exists(parent):
             os.makedirs(parent)
@@ -198,7 +184,41 @@ class AbstractMovementDetector(ABC):
 class PixelChangeFD(AbstractMovementDetector):
     """ Pixel Change Freezing Detector
 
-    Detects freezing based on pixel changes from frame to frame.
+    Detects freezing based on pixel-value change ratio from one frame
+    to the next.
+
+    First, a Gaussian blur filter is applied to the images. Next, the pixels
+    that have changed between the consecutive frames are detected. Then,
+    bounding-boxes are built around those pixels. Finally the ratio of the area
+    of the bounding boxes to the total area of the image is analyzed to
+    determine if the image should be classified as one containing movement
+    or not.
+
+    The exact values for the parameters must be determined on the basis of the
+    analyzed videos. The values will be very different depending on factors
+    such as the size of the moving object, contrast of the object with its
+    background etc.
+
+    Parameters
+    ----------
+    video : AbstractVideo
+        The video to analyze.
+    outlier_change_threshold : float
+        The Z-score of a frame's change relative to the previous frame must
+        surpass this value to be flagged as an outlier.
+    flag_outliers_buffer : int
+        The number of consecutive frames that must be identified as outliers
+        in order to flag all those frames as outliers.
+    movement_threshold : float
+        A value between 0 and 1. The ratio of pixel-change areas relative to the
+        area of the image above which the frame will be flagged as containing
+        movement.
+    freezing_buffer : int
+        The number of consecutive frames that must be identified as containing
+        freezing in order to flag all those frames as containing freezing.
+    blur_ksize : int
+        The size of the Gaussian blur filter. For more information refer to:
+        https://docs.opencv.org/master/d4/d13/tutorial_py_filtering.html
 
     References
     ----------
@@ -208,7 +228,6 @@ class PixelChangeFD(AbstractMovementDetector):
     def __init__(
             self,
             video: AbstractVideo,
-            # settings
             outlier_change_threshold: float,
             flag_outliers_buffer: int,
             movement_threshold: float,
@@ -222,23 +241,30 @@ class PixelChangeFD(AbstractMovementDetector):
         self.freezing_buffer = freezing_buffer
         self.blur_ksize = blur_ksize
 
+    @property
+    def _additional_columns(self) -> Tuple[str]:
+        return 'change_ratio',
+
+    # todo: improve readability
     def _build_meta(self, _timeit: bool = False):
         prev_frame = None
         t1 = time.time() if _timeit else None
         freezing_frames = 0
         self._metadata.loc[0, 'moving'] = True
+        img_area = self.video.frame_shape[0] * self.video.frame_shape[1]
         for i, frame in enumerate(self.video):
             frame = self._frame_preprocessing(frame)
             if prev_frame is None:
-                contours_area = 0
+                change_ratio = 0
             else:
                 diff = cv2.absdiff(prev_frame, frame)
                 diff = self._frame_postprocessing(diff)
                 contours = cv2.findContours(diff, cv2.RETR_EXTERNAL,
                                             cv2.CHAIN_APPROX_SIMPLE)[0]
                 contours_area = self._get_contours_area(contours)
-            self._metadata.loc[i, 'contours_area'] = contours_area
-            if contours_area < self.movement_threshold:
+                change_ratio = contours_area / img_area
+            self._metadata.loc[i, 'change_ratio'] = change_ratio
+            if change_ratio < self.movement_threshold:
                 if freezing_frames < self.freezing_buffer:
                     self._metadata.loc[i, 'moving'] = True
                     freezing_frames += 1
@@ -265,39 +291,18 @@ class PixelChangeFD(AbstractMovementDetector):
                                                         time.time() - t1))
         self._meta_built = True
 
-    @property
-    def _additional_columns(self) -> Tuple[str]:
-        return ('contours_area',)
-
     @staticmethod
     def _frame_postprocessing(frame: np.ndarray) -> np.ndarray:
-        """
-        Applies postprocessing to frame. Applies a threshold and then dilates the result.
-        :param frame: The frame to process.
-        :return: The processed frame.
-        """
         output = cv2.threshold(frame, 15, 255, cv2.THRESH_BINARY)[1]
         output = cv2.dilate(output, None, iterations=2)
         return output
 
     @staticmethod
     def _get_contours_area(contours: np.ndarray) -> float:
-        """
-        Calculates the total contours area.
-        :param contours: Numpy arrays containing the contours.
-        :return: The total combined area of the contours.
-        """
-        area = 0
-        for contour in contours:
-            area += cv2.contourArea(contour)
+        area = sum([cv2.contourArea(c) for c in contours])
         return area
 
     def _frame_preprocessing(self, frame: np.ndarray) -> np.ndarray:
-        """
-        Applies preprocessing to a frame. Converts to greyscale and applies a blur.
-        :param frame: The frame to process.
-        :return: The processed frame.
-        """
         output = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # convert to GreyScale
         output = cv2.GaussianBlur(
             output,
@@ -307,15 +312,10 @@ class PixelChangeFD(AbstractMovementDetector):
         return output
 
     def _update_meta(self):
-        """
-        Updates the meta-data fields according to contours-area calculations.
-        Fields modified by the user are left un-flagged.
-        The method is synchronised with respect to meta-data access.
-        """
         outlier_threshold = self.outlier_change_threshold
         flag_outliers_window = self.flag_outliers_buffer
-        contours_zscore = stats.zscore(self._metadata['contours_area'])
-        self._metadata.loc[:, 'outlier'] = contours_zscore > outlier_threshold
+        change_zscore = stats.zscore(self._metadata['change_ratio'])
+        self._metadata.loc[:, 'outlier'] = change_zscore > outlier_threshold
         virgin_indexes = ~self._metadata['manual_set']
         self._metadata.loc[virgin_indexes, 'flagged'] = (
                 np.round(

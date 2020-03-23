@@ -12,6 +12,7 @@ Welcome to movement-detector's documentation!
 
    video
    detectors
+   analysis
 
 
 

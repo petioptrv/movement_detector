@@ -11,29 +11,67 @@ from movement_detector.utils import get_video_mapped_path
 
 
 class AbstractMetaAnalyzer(ABC):
+    """Metadata analyzer.
+
+    A group of classes that can analyze metadata produced by a detector object.
+
+    Parameters
+    ----------
+    detector : AbstractMovementDetector
+        The detector who's metadata to analyze.
+    """
+
     def __init__(self, detector: AbstractMovementDetector):
         self.detector = detector
+        # TODO: this violates the open-closed principle
         self.analysis_path = self.get_analysis_path(
             vid_path=self.detector.video.vid_path
         )
 
-    @abstractmethod
-    def _analyze_meta(self, df: pd.DataFrame):
-        pass
-
     def run(self):
+        """Run the analysis.
+
+        Applies the analysis to the metadata and saves the results
+        as a CSV file.
+        """
         if not os.path.exists(self.analysis_path):
             analysis = self._analyze_meta(df=self.detector._metadata)
             self._save_analysis(analysis=analysis)
 
     @staticmethod
-    def get_analysis_path(vid_path) -> Path:
+    def get_analysis_path(vid_path: Path) -> Path:
+        """Returns the path in which to save the analysis file.
+
+        The analysis is saved in a sub-path relative to the analysis folder
+        that mimics the sub-path of the detector's video file relative to the
+        videos folder.
+
+        Parameters
+        ----------
+        vid_path : Path
+            The path to the video file.
+
+        Returns
+        -------
+        path : Path
+            The path to the analysis file.
+        """
         path = get_video_mapped_path(
             vid_path=vid_path,
             dir_suffix='analysis',
             file_extension='.csv',
         )
         return path
+
+    @abstractmethod
+    def _analyze_meta(self, df: pd.DataFrame):
+        """Overwrite to implement the meta-analysis.
+
+        Should accept a Pandas dataframe produced by a detector object. Refer
+        to the documentation of the detector class for more details on the
+        available fields.
+        """
+        pass
 
     def _save_analysis(self, analysis):
         parent = self.analysis_path.parent
@@ -43,21 +81,59 @@ class AbstractMetaAnalyzer(ABC):
 
 
 class IntervalAggregatorMA(AbstractMetaAnalyzer):
+    """Interval metadata aggregator.
+
+    The interval aggregator applies an aggregation function to the count
+    of the frames containing movement flagged by the detector over the
+    specified intervals of time.
+
+    Passing an `np.mean` aggregation will result in the percentage of movement
+    frames detected in each interval.
+
+    Parameters
+    ----------
+    detector : AbstractMovementDetector
+        The detector who's metadata to analyze.
+    intervals : list of floats
+        A list of the interval cut-off points.
+    aggregation : Callable, default np.mean
+        The aggregation operation that will be applied on the movement-positive
+        frames in the specified intervals.
+    include_end : bool, default True
+        If set to True and the last cut-off point is lower than the duration
+        of the video, the last interval will span from the cut-off point to
+        the end of the video.
+    """
+
     def __init__(
             self,
             detector: AbstractMovementDetector,
             intervals: List[float],
             aggregation: Callable = np.mean,
+            include_end: bool = True,
     ):
         super().__init__(detector=detector)
-        self.intervals = intervals
-        self.aggregation = aggregation
+        self._intervals = intervals
+        self._aggregation = aggregation
+        self._include_end = include_end
+
+    @property
+    def intervals(self) -> List[float]:
+        """The list of cut-off points for the intervals."""
+        return self._intervals
+
+    @property
+    def aggregation(self) -> Callable:
+        """The aggregation operation."""
+        return self._aggregation
 
     def _analyze_meta(self, df: pd.DataFrame):
-        last_timestamp = self.intervals[-1]
-        vid_len = self.detector.video.vid_duration
-        if vid_len > last_timestamp:
-            self.intervals.append(vid_len)
+        if self._include_end:
+            last_timestamp = self.intervals[-1]
+            vid_len = self.detector.video.vid_duration
+            if vid_len > last_timestamp:
+                self.intervals.append(vid_len)
+
         df = df.groupby(pd.cut(df['time'], bins=self.intervals))
         df = df.mean()['moving']
         return df

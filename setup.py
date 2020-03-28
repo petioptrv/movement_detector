@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 NAME = 'movement-detector'
-VERSION = '0.1.0'
+VERSION = 'v0.1.1'
 DESCRIPTION = 'Detect movement in videos.'
 INSTALL_PACKAGES = [
     'numpy==1.18.1',
@@ -53,4 +53,5 @@ setup(
     packages=find_packages(
         include=['movement_detector', 'movement_detector.*']
     ),
+    download_url='https://github.com/petioptrv/movement_detector/archive/v0.1.0.tar.gz',
 )

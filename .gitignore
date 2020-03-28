@@ -151,9 +151,6 @@ $RECYCLE.BIN/
 
 # End of https://www.gitignore.io/api/linux,macos,windows,pycharm
 
-# Large video files
-videos/*
-
 # Virtual environment
 venv
 
@@ -161,3 +158,6 @@ venv
 .flooignore
 .floo
 .idea/inspectionProfiles/
+/movement_detector.egg-info/
+/env/
+/.eggs/

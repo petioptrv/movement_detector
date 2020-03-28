@@ -119,8 +119,8 @@ def test_interval_aggregation_functions(
         analysis = analyzer.run()
 
     assert analysis.loc[0, 'moving'] == 1
-    assert analysis.loc[1, 'moving'] == .5
-    assert np.isclose(analysis.loc[2, 'moving'], .66, atol=.01)
+    assert np.isclose(analysis.loc[1, 'moving'], .5, atol=.02)
+    assert np.isclose(analysis.loc[2, 'moving'], .66, atol=.02)
 
     analyzer_kwargs['aggregation'] = np.sum
 
@@ -132,5 +132,5 @@ def test_interval_aggregation_functions(
         analysis = analyzer.run()
 
     assert analysis.loc[0, 'moving'] == 60
-    assert analysis.loc[1, 'moving'] == 30
+    assert analysis.loc[1, 'moving'] == 29
     assert analysis.loc[2, 'moving'] == 60

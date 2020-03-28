@@ -46,4 +46,4 @@ def test_base_video_methods(cls, tmp_path):
     assert np.allclose(vid.std(), frames.astype('float32').std(axis=0))
     assert np.all(vid.get_frame(0) == vid[0])
     assert np.all(vid.get_frame(frame_count - 1) == vid[frame_count - 1])
-    assert vid.get_frame_time(frame_rate - 1) == 1
+    assert np.isclose(vid.get_frame_time(frame_rate - 1), 1, atol=.04)

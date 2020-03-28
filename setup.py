@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 NAME = 'movement-detector'
-VERSION = 'v0.1.2'
+VERSION = 'v0.1.3'
 DESCRIPTION = 'Detect movement in videos.'
 INSTALL_PACKAGES = [
     'numpy==1.18.1',
@@ -35,9 +35,9 @@ setup(
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',
-        'Programming Language :: Python 3.6',
-        'Programming Language :: Python 3.7',
-        'Programming Language :: Python 3.8',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
     keywords='movement detection freezing behavioural behaviour behavioral'
              'behavior research',

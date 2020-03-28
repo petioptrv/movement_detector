@@ -3,7 +3,7 @@ from os import path
 from setuptools import setup, find_packages
 
 NAME = 'movement-detector'
-VERSION = 'v0.1.7'
+VERSION = 'v0.1.8'
 DESCRIPTION = 'Detect movement in videos.'
 INSTALL_PACKAGES = [
     'numpy==1.18.1',
@@ -12,10 +12,10 @@ INSTALL_PACKAGES = [
     'opencv-python==4.1.2.30',
     'moviepy==1.0.1',
     'imageio==2.6.1',
-    'pygame==1.9.6',
     'PyYAML>=5.1',
 ]
 DEV_PACKAGES = [
+    'pygame==1.9.6',
     'pytest==5.4.1',
     'sphinx==2.4.4',
     'sphinx_rtd_theme==0.4.3',

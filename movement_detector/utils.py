@@ -4,6 +4,13 @@ from typing import List
 
 
 def get_project_path() -> Path:
+    """Get the path to the project's root directory.
+
+    Returns
+    -------
+    project_path : Path
+        The path to the root directory of the project.
+    """
     file_dir = os.path.dirname(os.path.realpath(__file__))
     dir_path = Path(file_dir)
     project_path = dir_path.parent

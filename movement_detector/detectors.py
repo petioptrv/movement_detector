@@ -29,11 +29,11 @@ class AbstractMovementDetector(ABC):
     to the detection method. If the detection method does not hold the concept
     of "outliers", then all fields must be set to False.
 
+    **flagged**: Set to True for flagged outlier frames, and
+    changed to False upon manual-set of the `moving` field.
+
     **manual_set**: Set to True if the `moving` filed has been manually
     overwritten.
-
-    **flagged**: Set to True for frames outlier frames, and
-    changed to False upon manual-set.
 
     Parameters
     ----------
@@ -45,8 +45,8 @@ class AbstractMovementDetector(ABC):
         'time',
         'moving',
         'outlier',
-        'manual_set',
         'flagged',
+        'manual_set',
     )
 
     def __init__(
@@ -101,6 +101,7 @@ class AbstractMovementDetector(ABC):
             self._create_empty_meta()
             self._build_meta()
             self.save_meta()
+        self._meta_built = True
 
     def meta(
             self,
@@ -204,18 +205,18 @@ class PixelChangeFD(AbstractMovementDetector):
     video : AbstractVideo
         The video to analyze.
     outlier_change_threshold : float
-        The Z-score of a frame's change relative to the previous frame must
-        surpass this value to be flagged as an outlier.
+        The number of standard deviations from the mean that the change value
+        must be to be considered an outlier.
     flag_outliers_buffer : int
         The number of consecutive frames that must be identified as outliers
-        in order to flag all those frames as outliers.
+        in order to flag all those frames for review.
     movement_threshold : float
         A value between 0 and 1. The ratio of pixel-change areas relative to the
         area of the image above which the frame will be flagged as containing
         movement.
     freezing_buffer : int
         The number of consecutive frames that must be identified as containing
-        freezing in order to flag all those frames as containing freezing.
+        freezing in order to the `moving` field for all those frames to False.
     blur_ksize : int
         The size of the Gaussian blur filter. For more information refer to:
         https://docs.opencv.org/master/d4/d13/tutorial_py_filtering.html
@@ -265,10 +266,10 @@ class PixelChangeFD(AbstractMovementDetector):
                 change_ratio = contours_area / img_area
             self._metadata.loc[i, 'change_ratio'] = change_ratio
             if change_ratio < self.movement_threshold:
-                if freezing_frames < self.freezing_buffer:
+                if freezing_frames < self.freezing_buffer - 1:
                     self._metadata.loc[i, 'moving'] = True
                     freezing_frames += 1
-                elif freezing_frames == self.freezing_buffer:
+                elif freezing_frames == self.freezing_buffer - 1:
                     for j in range(self.freezing_buffer):
                         self._metadata.loc[i - j, 'moving'] = False
                     freezing_frames += 1
@@ -280,7 +281,6 @@ class PixelChangeFD(AbstractMovementDetector):
             self._metadata.loc[i, 'manual_set'] = False
             self._metadata.loc[i, 'time'] = self.video.get_frame_time()
             prev_frame = frame
-            i += 1
         self._metadata.loc[:, 'moving'] = self._metadata['moving'].astype(bool)
         self._metadata.loc[:, 'manual_set'] = (
             self._metadata['manual_set'].astype(bool)
@@ -289,7 +289,6 @@ class PixelChangeFD(AbstractMovementDetector):
         if _timeit:
             print('Video {} analyzed in {:.2f}s'.format(self.video.vid_name,
                                                         time.time() - t1))
-        self._meta_built = True
 
     @staticmethod
     def _frame_postprocessing(frame: np.ndarray) -> np.ndarray:
@@ -314,16 +313,15 @@ class PixelChangeFD(AbstractMovementDetector):
     def _update_meta(self):
         outlier_threshold = self.outlier_change_threshold
         flag_outliers_window = self.flag_outliers_buffer
-        change_zscore = stats.zscore(self._metadata['change_ratio'])
+        change_zscore = np.abs(stats.zscore(self._metadata['change_ratio']))
         self._metadata.loc[:, 'outlier'] = change_zscore > outlier_threshold
         virgin_indexes = ~self._metadata['manual_set']
+        # ugly, but optimized
         self._metadata.loc[virgin_indexes, 'flagged'] = (
-                np.round(
-                    self._metadata['outlier'].rolling(
-                        flag_outliers_window,
-                        min_periods=0
-                    ).mean()
-                ) == 1
+                self._metadata['outlier'].rolling(
+                    flag_outliers_window,
+                    min_periods=0
+                ).sum() == flag_outliers_window
         )[virgin_indexes]
         flagged_backfill = self._metadata['flagged'].copy()
         for i in range(1, flag_outliers_window + 1):

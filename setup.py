@@ -14,10 +14,11 @@ INSTALL_PACKAGES = [
     'PyYAML>=5.1',
 ]
 DEV_PACKAGES = [
-    'pytest',
-    'sphinx',
-    'sphinx_rtd_theme',
-    'numpydoc',
+    'pytest==5.4.1',
+    'sphinx==2.4.4',
+    'sphinx_rtd_theme==0.4.3',
+    'numpydoc==0.9.2',
+    'sphinx-napoleon==0.7'
 ]
 APP = ['main.py']
 DATA_FILES = []

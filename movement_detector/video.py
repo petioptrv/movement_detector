@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import os
+from pathlib import Path
 from typing import Optional
 
 import cv2
@@ -16,11 +17,11 @@ class AbstractVideo(ABC):
 
     Parameters
     ----------
-    file_path : str
+    file_path : Path
         The path to the video file.
     """
 
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: Path):
         self.vid_path = os.path.realpath(file_path)
         self.vid_name = os.path.basename(self.vid_path)
 
@@ -148,7 +149,7 @@ class CvVideo(AbstractVideo):
     """
     _precision_dtype = np.dtype('float32')
 
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: Path):
         super().__init__(file_path)
         self._frames = cv2.VideoCapture(self.vid_path)
         self._frame_count = int(self._frames.get(cv2.CAP_PROP_FRAME_COUNT))

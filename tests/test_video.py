@@ -3,7 +3,7 @@ import numpy as np
 
 from movement_detector.video import CvVideo
 
-from tests.conftest import create_video, extract_frames
+from tests.conftest import create_uniform_frames_video, extract_frames
 
 # =============================== BASE =========================================
 
@@ -19,7 +19,7 @@ def test_base_video_methods(cls, tmp_path):
     frame_count = frame_rate * duration
     frame_vals = np.random.randint(0, 255, (frame_count,))
     resolution = (250, 250)
-    create_video(
+    create_uniform_frames_video(
         path=vid_path,
         uniform_frame_values=frame_vals,
         frame_rate=frame_rate,

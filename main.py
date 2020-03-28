@@ -38,7 +38,7 @@ def main():
                 'outlier_change_threshold', .5
             ),
             flag_outliers_buffer=settings.get('flag_outliers_buffer', 5),
-            movement_threshold=settings.get('movement_threshold', 100),
+            movement_threshold=settings.get('movement_threshold', .1),
             freezing_buffer=settings.get('freezing_buffer', 5),
             blur_ksize=settings.get('blur_ksize', 3),
         )
@@ -49,7 +49,9 @@ def main():
         meta_analyzer = IntervalAggregatorMA(
             detector=detector,
             intervals=settings['intervals'],
-            aggregation=lambda x: 1 - np.mean(x)
+            aggregation=lambda x: 1 - np.mean(x),
+            include_start=settings.get('include_start', 1),
+            include_end=settings.get('include_end', 1),
         )
         meta_analyzer.run()
 

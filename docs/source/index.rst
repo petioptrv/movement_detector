@@ -10,6 +10,9 @@
    self
    api
 
+.. note::
+   The Movement Detector (MD) library is in a minimal viable product (MVP) state. More usage is needed to iron-out the
+   API and interface. For support or feedback, please contact petioptrv@icloud.com.
 
 Welcome to movement-detector's documentation!
 =============================================

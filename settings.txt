@@ -1,0 +1,6 @@
+intervals = [5, 10, 15, 20, 25]
+outlier_change_threshold = .5
+flag_outliers_buffer = 5
+movment_threshold = .1
+freezing_buffer = 5
+blur_ksize = 3

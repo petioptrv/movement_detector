@@ -154,8 +154,10 @@ $RECYCLE.BIN/
 # Large video files
 videos/*
 
-# Experimentation folder
-experimentation/*
-
 # Virtual environment
 venv
+
+#Floobits
+.flooignore
+.floo
+.idea/inspectionProfiles/

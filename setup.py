@@ -3,13 +3,13 @@ from os import path
 from setuptools import setup, find_packages
 
 NAME = 'movement-detector'
-VERSION = 'v0.1.5'
+VERSION = 'v0.1.6'
 DESCRIPTION = 'Detect movement in videos.'
 INSTALL_PACKAGES = [
     'numpy==1.18.1',
     'pandas==1.0.1',
     'scipy==1.4.1',
-    'opencv-python==4.1.0.32',
+    'opencv-python==4.1.0.25',
     'moviepy==1.0.1',
     'imageio==2.6.1',
     'pygame==1.9.6',

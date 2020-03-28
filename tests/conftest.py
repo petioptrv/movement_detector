@@ -54,7 +54,10 @@ def extract_frames(path: Path):
 
 @pytest.fixture
 def uniform_frame_values_video(request):
-    frame_vals = request.param
+    if hasattr(request, 'param'):
+        frame_vals = request.param
+    else:
+        frame_vals = None
     vid_path = get_video_path()
 
     frame_rate = 30

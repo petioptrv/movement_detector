@@ -3,7 +3,7 @@ from os import path
 from setuptools import setup, find_packages
 
 NAME = 'movement-detector'
-VERSION = 'v0.1.8'
+VERSION = 'v0.1.9'
 DESCRIPTION = 'Detect movement in videos.'
 INSTALL_PACKAGES = [
     'numpy==1.18.1',

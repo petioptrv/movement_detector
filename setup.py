@@ -12,15 +12,16 @@ INSTALL_PACKAGES = [
     'opencv-python==4.1.2.30',
     'moviepy==1.0.1',
     'imageio==2.6.1',
-    'PyYAML>=5.1',
 ]
 DEV_PACKAGES = [
+    'PyYAML>=5.1',
     'pygame==1.9.6',
     'pytest==5.4.1',
     'sphinx==2.4.4',
     'sphinx_rtd_theme==0.4.3',
     'numpydoc==0.9.2',
-    'sphinx-napoleon==0.7'
+    'sphinx-napoleon==0.7',
+    'twine',
 ]
 APP = ['main.py']
 DATA_FILES = []
@@ -58,9 +59,8 @@ setup(
     },
     # package_dir={'': ''},
     packages=find_packages(
-        exclude=['movement_detector.md_interface',
-                 'movement_detector.md_interface.*'],
         include=['movement_detector', 'movement_detector.*'],
     ),
+    url='https://github.com/petioptrv/movement_detector',
     download_url=f'https://github.com/petioptrv/movement_detector/archive/{VERSION}.tar.gz',
 )

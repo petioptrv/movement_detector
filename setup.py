@@ -1,13 +1,15 @@
+from os import path
+
 from setuptools import setup, find_packages
 
 NAME = 'movement-detector'
-VERSION = 'v0.1.3'
+VERSION = 'v0.1.4'
 DESCRIPTION = 'Detect movement in videos.'
 INSTALL_PACKAGES = [
     'numpy==1.18.1',
     'pandas==1.0.1',
     'scipy==1.4.1',
-    'opencv-python==4.1.0.25',
+    'opencv-python==4.1.0',
     'moviepy==1.0.1',
     'imageio==2.6.1',
     'pygame==1.9.6',
@@ -23,12 +25,17 @@ DEV_PACKAGES = [
 APP = ['main.py']
 DATA_FILES = []
 OPTIONS = {}
+THIS_DIR = path.abspath(path.dirname(__file__))
+
+with open(path.join(THIS_DIR, 'README.md'), encoding='utf-8') as f:
+    LONG_DESCRIPTION = f.read()
 
 
 setup(
     name=NAME,
     version=VERSION,
     description=DESCRIPTION,
+    long_description=LONG_DESCRIPTION,
     # url={'Documentation': '', 'Source': ''},
     author='Petio Petrov',
     license='GNU GPLv3',

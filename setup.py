@@ -58,7 +58,9 @@ setup(
     },
     # package_dir={'': ''},
     packages=find_packages(
-        include=['movement_detector', 'movement_detector.*']
+        exclude=['movement_detector.md_interface',
+                 'movement_detector.md_interface.*'],
+        include=['movement_detector', 'movement_detector.*'],
     ),
     download_url=f'https://github.com/petioptrv/movement_detector/archive/{VERSION}.tar.gz',
 )

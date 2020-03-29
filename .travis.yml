@@ -3,19 +3,15 @@ python:
 - '3.6'
 - '3.7'
 - '3.8'
-os:
-- linux
-- osx
-- windows
 install:
-- pip install ".[dev]"
+- pip install '.[dev]'
 script:
 - pytest
 deploy:
   provider: pypi
   username: petioptrv
   password:
-    secure: F2wCVSIQ78u7G42xL7wV1K5Qb4r+KB6qseH90abQRuNw3a/3I+zEXGvPm43hYU3V3dB5VhdfsHjMQlOMlmI7DShzM48K9Xe9nUXwDgjuWCmX40hXT2jymZxDh5mE54CqRQB9/qITmuKxAjXHtGzSzaGI0njv0ufcRBe6CFLwA+9ptlq7laUKagVpnhq/ArY0/u1UWcBJ8Q5auJnyWyD2NYb/0xAqBo1X8lWBDkW2VCFvpR0epFyU5OSyTIrWEXGd8uYc6LswIgn5dSf44lHx2EWLwC5Wt/FNyHNP0Bl8oFd90CbwFsS6GtJG5ZqXxlxizXvUepWe9A3FI+Dm92Pfcx3Y1J/1aE/pM8FVnBXzim9KLRK9UgeLWiu5sDLI8V7wYXuPls8HtvVfjc0rKBlfHNQg9/RKDglIr65ohZlwkfgPtier1PihQ1SjwSGM3LoueMygDbWqsj5saZKSsHagWiiqpLx9e0OrxakQ3U+uUjaFZVyc1m1u7CMc1mHjL4FrjbeaGoaJU8W9xit3KyHOXTOnq4pAs3+/clOQo1YZG8aatOxWa4C2+KdKnSMSxvsptAk422Kxhs47+nQ4Y/QawuSNhd9aMIRiIDDfpCA8xxgQHtVRi/Ty6FWSYmUh/nrAOuapstxqfOhn9dAnkb1qfMVH52n1MAS1Y+xQWer+iN0=
+    secure: z4sCOp2814F5oSWt6TC0IJTkw8bJorbMf/dUj1rt1BHij7PFVXEx0jLhEuNBwjb4CuU33UjeCrUTUCiPMnPJFMW5IY2AG28IBqbR8aZ+nwfcolG/+VpAOyozl2RtklISL8yhYOwjjp3q8NG7ssNbRsCra0d++ObdLWTWmk67x0fKve2XIpalW9dyIZig8vJmd/8oNBCyLBqMgMef+rdmYAptqIZYYEIu261dS5Le8qLUIIXSXmdAclAK53/0fXO0aZvHhXcTnWEM5fovApuiOhS75va1LWmmniCayPbZH35lc+DMxB9lJL3AmoqvZR/+B0OsGxT4dxbUpYXyXatOzAZf3osJ7FeNknob3KHL0xO0W3xsm1Bfdu78FJkBHsBOqCiVKc+nvpY0/6Zg3QLYqIH1DOHCE+vuIQthDxK3uqlH3Xb2MZiz9eDT93ZCjMIqPZ7uHWpeGwlChRfpOG+tvJ+m544ABx9ugfAQ4kSOr6a3Rb34uRiDXNpadlmOcS2ove6b8pm8Y8pK5bhM3hsIedeMnnZ4PvIibCEmnQWgXebDpoMixOYUQ+MC9Vutoz1Jvu/cX0+s7Dfz7JcRG08nVi4rlf6Bqvd1G+2D25TVrW6f6FTmcyl1kCAFg80eSfzo5N6CTSSljuwccgfCeKm0cLDh7v/n4m1Wgb62GgJFNsY=
   on:
     tags: true
     branch: master

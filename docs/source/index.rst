@@ -56,7 +56,8 @@ For programmers who wish to use the MD's library of classes in their code, the i
 
 Refer to the :ref:`API apge<api-docs>` for the full API documentation.
 
-.. _research-scientists-section
+.. _research-scientists-section:
+
 Research Scientists Workflow
 ============================
 The detection algorithm used by the experimental interface of MD relies on the magnitude of the pixel-value changes
@@ -75,9 +76,10 @@ Setup
 3. Drag and drop the file called "run" onto the terminal window.
 4. Hit Enter.
 5. See :ref:`controls-section` section for details on how to operate the viewer window.
-5. Results are saved in the "analysis" folder.
+6. Results are saved in the "analysis" folder.
 
 .. _controls-section:
+
 Viewer Controls
 ^^^^^^^^^^^^^^^
 

@@ -27,7 +27,7 @@ DEV_PACKAGES = [
     'sphinxcontrib-napoleon==0.7',
     'twine',
     'bumpversion',
-] + INTERFACE_PACKAGES
+]
 APP = ['main.py']
 DATA_FILES = []
 OPTIONS = {}

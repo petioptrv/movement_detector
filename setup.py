@@ -1,10 +1,12 @@
 from os import path
+from pathlib import Path
 
 from setuptools import setup, find_packages
 
 NAME = 'movement-detector'
-VERSION = 'v0.1.9'
+VERSION = 'v0.1.10'
 DESCRIPTION = 'Detect movement in videos.'
+THIS_DIR = Path(path.abspath(path.dirname(__file__)))
 INSTALL_PACKAGES = [
     'numpy==1.18.1',
     'pandas==1.0.1',
@@ -17,18 +19,18 @@ DEV_PACKAGES = [
     'PyYAML>=5.1',
     'pygame==1.9.6',
     'pytest==5.4.1',
-    'sphinx==2.4.4',
-    'sphinx_rtd_theme==0.4.3',
-    'numpydoc==0.9.2',
-    'sphinx-napoleon==0.7',
     'twine',
 ]
+
+with open(THIS_DIR / 'docs' / 'requirements.txt', encoding='utf-8') as f:
+    DOCS_REQUIREMENTS = f.read().split('\n')
+
+DEV_PACKAGES.extend(DOCS_REQUIREMENTS)
 APP = ['main.py']
 DATA_FILES = []
 OPTIONS = {}
-THIS_DIR = path.abspath(path.dirname(__file__))
 
-with open(path.join(THIS_DIR, 'README.md'), encoding='utf-8') as f:
+with open(THIS_DIR / 'README.md', encoding='utf-8') as f:
     LONG_DESCRIPTION = f.read()
 
 

@@ -39,11 +39,11 @@ the terminal and hit Enter:
 .. code-block:: console
 
    $ git clone [INSERT LINK HERE]
-   $ cd movement_detector                 # CHECK IF NEEDED
-   $ chmod 700 run                        # CHECK IF NEEDED
+   $ cd movement_detector
+   $ chmod 700 run
 
 
-Refer to the :ref:`Research Scientists Workflow` section for usage details.
+Refer to the :ref:`research-scientists-section` section for usage details.
 
 For Python Developers
 ^^^^^^^^^^^^^^^^^^^^^
@@ -56,6 +56,7 @@ For programmers who wish to use the MD's library of classes in their code, the i
 
 Refer to the :ref:`API apge<api-docs>` for the full API documentation.
 
+.. _research-scientists-section
 Research Scientists Workflow
 ============================
 The detection algorithm used by the experimental interface of MD relies on the magnitude of the pixel-value changes
@@ -73,7 +74,12 @@ Setup
 2. Open a Terminal window.
 3. Drag and drop the file called "run" onto the terminal window.
 4. Hit Enter.
+5. See :ref:`controls-section` section for details on how to operate the viewer window.
 5. Results are saved in the "analysis" folder.
+
+.. _controls-section:
+Viewer Controls
+^^^^^^^^^^^^^^^
 
 Settings
 ^^^^^^^^

@@ -4,7 +4,7 @@ from pathlib import Path
 from setuptools import setup, find_packages
 
 NAME = 'movement-detector'
-VERSION = 'v0.1.10'
+VERSION = 'v0.1.11'
 DESCRIPTION = 'Detect movement in videos.'
 THIS_DIR = Path(path.abspath(path.dirname(__file__)))
 INSTALL_PACKAGES = [

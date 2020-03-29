@@ -1,10 +1,11 @@
 from os import path
 from pathlib import Path
+import re
 
 from setuptools import setup, find_packages
 
 NAME = 'movement-detector'
-VERSION = 'v0.2.1'
+VERSION = 'v0.2.2'
 DESCRIPTION = 'Detect movement in videos.'
 THIS_DIR = Path(path.abspath(path.dirname(__file__)))
 INSTALL_PACKAGES = [
@@ -32,8 +33,13 @@ APP = ['main.py']
 DATA_FILES = []
 OPTIONS = {}
 
+
+def fix_readme(txt):
+    return re.sub(r'\.\. PYPI-BEGIN([\r\n]|.)*?PYPI-END', '', txt, re.DOTALL)
+
+
 with open(THIS_DIR / 'README.md', encoding='utf-8') as f:
-    LONG_DESCRIPTION = f.read()
+    LONG_DESCRIPTION = fix_readme(f.read())
 
 with open(THIS_DIR / 'LICENSE.txt', encoding='utf-8') as f:
     LICENSE = f.read()

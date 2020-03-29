@@ -20,12 +20,11 @@ DEV_PACKAGES = [
     'pygame==1.9.6',
     'pytest==5.4.1',
     'twine',
+    'sphinx==2.4.4',
+    'sphinx_rtd_theme==0.4.3',
+    'numpydoc==0.9.2',
+    'sphinxcontrib-napoleon==0.7',
 ]
-
-with open(THIS_DIR / 'docs' / 'requirements.txt', encoding='utf-8') as f:
-    DOCS_REQUIREMENTS = f.read().split('\n')
-
-DEV_PACKAGES.extend(DOCS_REQUIREMENTS)
 APP = ['main.py']
 DATA_FILES = []
 OPTIONS = {}

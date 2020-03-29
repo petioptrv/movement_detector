@@ -38,7 +38,7 @@ the terminal and hit Enter:
 
 .. code-block:: console
 
-   $ git clone [INSERT LINK HERE]
+   $ git clone https://github.com/petioptrv/movement_detector.git
    $ cd movement_detector
    $ chmod 700 run
 

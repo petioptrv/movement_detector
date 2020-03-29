@@ -5,7 +5,7 @@ import re
 from setuptools import setup, find_packages
 
 NAME = 'movement-detector'
-VERSION = 'v0.2.2'
+VERSION = 'v0.2.3'
 DESCRIPTION = 'Detect movement in videos.'
 THIS_DIR = Path(path.abspath(path.dirname(__file__)))
 INSTALL_PACKAGES = [

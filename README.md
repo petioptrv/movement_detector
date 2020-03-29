@@ -1,5 +1,8 @@
 # Movement Detector
 
+[![Build Status](https://travis-ci.com/petioptrv/movement_detector.svg?branch=master)](https://travis-ci.com/petioptrv/movement_detector)
+[![Documentation Status](https://readthedocs.org/projects/movement-detector/badge/?version=latest)](https://movement-detector.readthedocs.io/en/latest/?badge=latest)
+
 The Movement Detector (MD) is a collection of classes enabling the detection of movement in video files. The original
 purpose of the library is to enable the detection of freezing responses during behavioural experiments,
 such as initially proposed by Blanchard and Blanchard 1988 [1].

@@ -65,23 +65,49 @@ between frames to determine if there is movement in the video. Clusters of pixel
 to the next are enclosed in bounding-boxes. The change value for a given frame is calculated as the ratio between the
 total area of the pixel-change bounding boxes to the total area of the frame.
 
-Setup
-^^^^^
-1. Copy the experiment videos in the "videos" folder.
+The GUI for MD is still in development, but an initial version is available for testing. The interactive session
+consists in playing the video in the viewer to determine if the analysis was accurate or not, and manually making
+adjustments in the latter case.
+
+Viewer Setup
+^^^^^^^^^^^^
+#. Adjust the :ref:`settings<settings-section>`.
+#. Copy the experiment videos in the "videos" folder.
 
    a. The videos can be arranged in a folder structure.
    b. All videos analyzed at the same time must have the same interval start and end times.
 
-2. Open a Terminal window.
-3. Drag and drop the file called "run" onto the terminal window.
-4. Hit Enter.
-5. See :ref:`controls-section` section for details on how to operate the viewer window.
-6. Results are saved in the "analysis" folder.
+#. Open a Terminal window.
+#. Drag and drop the file called "run" onto the terminal window.
+#. Hit Enter.
+#. See :ref:`controls-section` section for details on how to operate the viewer window.
+#. Results are saved in the "analysis" folder and are arranged in the same folder structure as the video files.
 
 .. _controls-section:
 
 Viewer Controls
 ^^^^^^^^^^^^^^^
+All key-commands, except for the space-bar, operate only while the video is on pause.
+
++----------+---------------------------------------------------------------------------------------+
+| Key      | Setting Description                                                                   |
++==========+=======================================================================================+
+| `<-`     | Previous frame.                                                                       |
++----------+---------------------------------------------------------------------------------------+
+| `->`     | Next frame.                                                                           |
++----------+---------------------------------------------------------------------------------------+
+| `f`      | Set current frame to "freezing" and move to next frame.                               |
++----------+---------------------------------------------------------------------------------------+
+| `m`      | Set current frame to "moving" and move to next frame.                                 |
++----------+---------------------------------------------------------------------------------------+
+| `n`      | Jump to the next flagged frame.                                                       |
++----------+---------------------------------------------------------------------------------------+
+| `p`      | Jump to the previous flagged frame.                                                   |
++----------+---------------------------------------------------------------------------------------+
+| `space`  | Play/pause video.                                                                     |
++----------+---------------------------------------------------------------------------------------+
+
+.. _settings-section:
 
 Settings
 ^^^^^^^^

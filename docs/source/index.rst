@@ -39,8 +39,6 @@ the terminal and hit Enter:
 .. code-block:: console
 
    $ git clone https://github.com/petioptrv/movement_detector.git
-   $ cd movement_detector
-   $ chmod 700 run
 
 
 Refer to the :ref:`research-scientists-section` section for usage details.
@@ -78,7 +76,7 @@ Viewer Setup
    b. All videos analyzed at the same time must have the same interval start and end times.
 
 #. Open a Terminal window.
-#. Drag and drop the file called "run" onto the terminal window.
+#. Drag and drop the `run.sh` file onto the terminal window.
 #. Hit Enter.
 #. See :ref:`controls-section` section for details on how to operate the viewer window.
 #. Results are saved in the "analysis" folder and are arranged in the same folder structure as the video files.

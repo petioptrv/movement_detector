@@ -4,7 +4,7 @@ from pathlib import Path
 from setuptools import setup, find_packages
 
 NAME = 'movement-detector'
-VERSION = 'v0.1.11'
+VERSION = 'v0.2.0'
 DESCRIPTION = 'Detect movement in videos.'
 THIS_DIR = Path(path.abspath(path.dirname(__file__)))
 INSTALL_PACKAGES = [
@@ -15,22 +15,28 @@ INSTALL_PACKAGES = [
     'moviepy==1.0.1',
     'imageio==2.6.1',
 ]
+INTERFACE_PACKAGES = [
+    'pygame==1.9.6',
+]
 DEV_PACKAGES = [
     'PyYAML>=5.1',
-    'pygame==1.9.6',
     'pytest==5.4.1',
-    'twine',
     'sphinx==2.4.4',
     'sphinx_rtd_theme==0.4.3',
     'numpydoc==0.9.2',
     'sphinxcontrib-napoleon==0.7',
-]
+    'twine',
+    'bumpversion',
+] + INTERFACE_PACKAGES
 APP = ['main.py']
 DATA_FILES = []
 OPTIONS = {}
 
 with open(THIS_DIR / 'README.md', encoding='utf-8') as f:
     LONG_DESCRIPTION = f.read()
+
+with open(THIS_DIR / 'LICENSE.txt', encoding='utf-8') as f:
+    LICENSE = f.read()
 
 
 setup(
@@ -40,7 +46,7 @@ setup(
     long_description=LONG_DESCRIPTION,
     # url={'Documentation': '', 'Source': ''},
     author='Petio Petrov',
-    license='GNU GPLv3',
+    license=LICENSE,
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',
@@ -56,12 +62,12 @@ setup(
     setup_requires=['py2app'],
     install_requires=INSTALL_PACKAGES,
     extras_require={
-        'dev': DEV_PACKAGES
+        'dev': DEV_PACKAGES,
+        'interface': INTERFACE_PACKAGES,
     },
     # package_dir={'': ''},
     packages=find_packages(
         include=['movement_detector', 'movement_detector.*'],
     ),
     url='https://github.com/petioptrv/movement_detector',
-    download_url=f'https://github.com/petioptrv/movement_detector/archive/{VERSION}.tar.gz',
 )

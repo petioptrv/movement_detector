@@ -1,10 +1,7 @@
 import numpy as np
 
-from movement_detector import (
-    CvVideo,
-    Interface,
-    PixelChangeFD,
-)
+from movement_detector import CvVideo, PixelChangeFD
+from md_interface.interface import Interface
 from movement_detector.analysis import IntervalAggregatorMA
 from movement_detector.utils import get_video_paths, get_project_path
 

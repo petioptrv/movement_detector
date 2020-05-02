@@ -25,7 +25,7 @@ private:
     cv::VideoCapture video;
 
 
-    static std::string parseVidName(const std::string &filePath);
+    void parseVidName(const std::string &filePath);
 
     void loadVideo();
 };

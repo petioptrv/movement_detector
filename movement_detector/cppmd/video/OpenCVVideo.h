@@ -8,24 +8,39 @@
 
 #include <string>
 #include <array>
-#include <opencv2/videoio.hpp>
+#include <opencv2/opencv.hpp>
+#include <boost/filesystem.hpp>
 
 class OpenCVVideo {
 public:
-    explicit OpenCVVideo(const std::string &filePath);
+    explicit OpenCVVideo(const boost::filesystem::path &filePath);
 
-    float getVidDuration();
+    double getVidDuration();
 
     std::array<int, 2> getFrameShape();
 
+    double getFrameRate();
+
+    void setFramePos(int framePos);
+
+    cv::Mat getFrameAndAdvance();
+
+    size_t getFrameCount();
+
+    cv::Mat getFrame(int idx);
+
+    double getCurrentFramePos();
+
+    cv::Mat getFramesSum();
+
 
 private:
-    std::string vidPath;
+    boost::filesystem::path vidPath;
     std::string vidName;
     cv::VideoCapture video;
 
 
-    static std::string parseVidName(const std::string &filePath);
+    void parseVidName();
 
     void loadVideo();
 };

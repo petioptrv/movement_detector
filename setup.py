@@ -12,7 +12,7 @@ INSTALL_PACKAGES = [
     'numpy==1.18.1',
     'pandas==1.0.1',
     'scipy==1.4.1',
-    'opencv-python==4.1.2.30',
+    'opencv-python==4.2.0.32',
     'moviepy==1.0.1',
     'imageio==2.6.1',
 ]

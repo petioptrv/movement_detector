@@ -9,7 +9,7 @@ VERSION = 'v0.2.4'
 DESCRIPTION = 'Detect movement in videos.'
 THIS_DIR = Path(path.abspath(path.dirname(__file__)))
 INSTALL_PACKAGES = [
-    'numpy==1.18.1',
+    'numpy==1.22.0',
     'pandas==1.0.1',
     'scipy==1.4.1',
     'opencv-python==4.1.2.30',
